@@ -107,18 +107,18 @@ Sistem hanya memiliki 3 role internal:
 
 ### 2.2 Permission Matrix Ringkas
 
-| Fitur | Admin | Editor | Wartawan |
-|---|---|---|---|
-| Kelola setting global | Ya | Tidak | Tidak |
-| Kelola user | Ya | Tidak | Tidak |
-| Buat artikel | Ya | Ya | Ya |
-| Edit semua artikel | Ya | Ya | Tidak |
-| Edit artikel sendiri | Ya | Ya | Ya |
-| Submit review | Ya | Ya | Ya |
-| Approve artikel | Ya | Ya | Tidak |
-| Publish artikel | Ya | Ya | Tidak |
-| Hapus artikel | Ya | Terbatas | Tidak |
-| Kelola komentar | Ya | Ya | Tidak |
+| Fitur                 | Admin | Editor   | Wartawan |
+| --------------------- | ----- | -------- | -------- |
+| Kelola setting global | Ya    | Tidak    | Tidak    |
+| Kelola user           | Ya    | Tidak    | Tidak    |
+| Buat artikel          | Ya    | Ya       | Ya       |
+| Edit semua artikel    | Ya    | Ya       | Tidak    |
+| Edit artikel sendiri  | Ya    | Ya       | Ya       |
+| Submit review         | Ya    | Ya       | Ya       |
+| Approve artikel       | Ya    | Ya       | Tidak    |
+| Publish artikel       | Ya    | Ya       | Tidak    |
+| Hapus artikel         | Ya    | Terbatas | Tidak    |
+| Kelola komentar       | Ya    | Ya       | Tidak    |
 
 ### 2.3 Aktor Publik Non-Role
 
@@ -220,7 +220,26 @@ Aturan wajib:
   - notifikasi editorial internal sebagai opsi fase awal
 - Konfigurasi mail wajib melalui `.env`, tidak boleh hardcode
 
-### 3.6 Prinsip Pemilihan Stack
+### 3.6 Feature Flag System
+
+Feature flag wajib tersedia untuk mengaktifkan atau menonaktifkan fitur tertentu tanpa mengubah kode inti.
+
+Flag minimum fase awal:
+
+- `AMP on/off`
+- `AI on/off`
+- `Comment on/off`
+
+Prinsip:
+
+- konfigurasi feature flag harus tersentralisasi
+- keputusan fase awal:
+  - feature flag disimpan di `settings` table
+  - config hanya dipakai sebagai fallback default
+- perubahan flag tidak boleh membutuhkan redeploy besar untuk kasus operasional sederhana
+- perubahan flag operasional harus bisa dilakukan tanpa edit file aplikasi
+
+### 3.7 Prinsip Pemilihan Stack
 
 - harus stabil
 - harus bisa hidup di shared hosting
@@ -339,7 +358,9 @@ app/
 |-- Services/
 |   |-- ArticleService.php
 |   |-- SlugService.php
+|   |-- TagService.php
 |   |-- SEOService.php
+|   |-- MediaService.php
 |   `-- AIService.php
 |-- Http/
 |   |-- Controllers/
@@ -386,6 +407,7 @@ tests/
 docs/
 |-- PROJECT_MASTER_DOC.md
 |-- CHANGELOG.md
+|-- RECOVERY.md
 `-- DECISIONS/
 ```
 
@@ -396,7 +418,9 @@ docs/
 - seluruh logika bisnis non-trivial ditempatkan di `app/Services`
 - `ArticleService.php` menangani create, update, submit review, publish, archive
 - `SlugService.php` menangani auto-generate dan duplicate slug
+- `TagService.php` menangani normalisasi tag, auto-generate slug tag, duplicate handling slug tag, dan sinkronisasi relasi artikel-tag
 - `SEOService.php` menangani meta dan schema builder
+- `MediaService.php` menangani upload, resize, hashing filename, dan path storage media
 - `AIService.php` menangani integrasi AI terkontrol
 - request validation dipisah ke `app/Http/Requests`
 - authorization berbasis objek dipisah ke `app/Policies`
@@ -662,7 +686,30 @@ Aturan:
 - `tags` harus dibuat sebelum `article_tags`
 - `article_tags` harus dibuat setelah `articles`
 
-### 6.6 Catatan Implementasi Database
+### 6.6 Seeder Strategy
+
+Seeder wajib fase awal:
+
+1. Admin default
+   - email: `admin@local.test`
+   - password: hashed default
+2. Editor default
+3. Wartawan sample
+4. Kategori default:
+   - `Berita`
+   - `Lokal`
+   - `Nasional`
+   - `Ekonomi`
+5. Setting default:
+   - `site_name`
+   - `site_description`
+
+Tujuan:
+
+- mempercepat testing
+- memastikan sistem langsung usable setelah migrate
+
+### 6.7 Catatan Implementasi Database
 
 - `articles.slug` wajib unik global
 - `categories.slug` wajib unik global
@@ -672,7 +719,7 @@ Aturan:
 - fulltext index artikel bergantung dukungan engine dan versi MySQL
 - bila shared hosting membatasi fitur tertentu, fallback pencarian dapat memakai `LIKE` bertahap pada fase awal
 
-### 6.7 Media & Image Storage Strategy
+### 6.8 Media & Image Storage Strategy
 
 - Storage driver fase awal: local disk Laravel di `storage/app/public`
 - Symlink public storage wajib dijalankan saat deployment:
@@ -686,8 +733,14 @@ Aturan:
 - Bila environment mendukung, migrasi ke S3-compatible storage harus dapat dilakukan tanpa perubahan besar karena Laravel filesystem abstraction
 - Nama file harus di-hash atau di-randomize
 - Nama asli file upload tidak boleh dipakai sebagai nama file final
+- Resize image direkomendasikan memakai library image processing yang kompatibel dengan Laravel service layer
+- Keputusan awal:
+  - gunakan `intervention/image` atau library setara
+  - driver image bergantung dukungan `GD` atau `Imagick`
+- Dukungan ekstensi PHP untuk image processing wajib diverifikasi di hosting target
+- Seluruh proses upload dan resize ditangani melalui `MediaService`
 
-### 6.8 Tags System
+### 6.9 Tags System
 
 - Tag bersifat opsional pada artikel
 - Relasi artikel ke tag adalah many-to-many
@@ -701,8 +754,16 @@ Aturan:
   - `article_id`
   - `tag_id`
 - `article_tags` memakai composite primary key pada `article_id` dan `tag_id`
+- Pivot `article_tags` secara sengaja memakai `created_at` dan `updated_at`
+- Implementasi Eloquent harus konsisten dengan keputusan ini melalui `withTimestamps()`
+- `tags.slug` wajib unik global
+- slug tag harus auto-generate dari `name`
+- admin dan editor boleh membuat serta mengubah slug tag
+- jika slug manual kosong, sistem wajib generate otomatis dari `name`
+- jika terjadi duplicate slug tag, `TagService` wajib menambahkan suffix numerik secara deterministik
+- wartawan tidak mengelola master tag langsung pada fase awal
 
-### 6.9 Views Count Strategy
+### 6.10 Views Count Strategy
 
 - Increment `views_count` tidak boleh dilakukan langsung di request cycle secara synchronous
 - Strategi fase awal:
@@ -719,12 +780,12 @@ Route publik dan admin harus tegas, konsisten, dan SEO-friendly.
 
 ### 7.1 Struktur URL Wajib
 
-- `/` → homepage
-- `/berita/{articleSlug}` → detail artikel
-- `/kategori/{categorySlug}` → halaman kategori
-- `/admin/...` → admin panel
-- `/rss.xml` → feed RSS
-- `/amp/...` → halaman AMP
+- `/` -> homepage
+- `/berita/{articleSlug}` -> detail artikel
+- `/kategori/{categorySlug}` -> halaman kategori
+- `/admin/...` -> admin panel
+- `/rss.xml` -> feed RSS
+- `/amp/...` -> halaman AMP
 
 ### 7.2 Detail Route Publik
 
@@ -748,13 +809,8 @@ Route publik dan admin harus tegas, konsisten, dan SEO-friendly.
 - `/amp/berita/{articleSlug}`
   - versi AMP detail artikel
   - artikel terarsip tidak boleh tampil
-
-### 7.4 Archived Article Behavior di Route Publik
-
-- Artikel dengan `archived_at` terisi dianggap tidak aktif secara publik
-- Query halaman publik wajib selalu menambahkan kondisi `archived_at IS NULL`
-- Artikel yang diarsipkan tidak tampil di homepage, kategori, pencarian, atau RSS
-- Akses langsung ke URL artikel yang diarsipkan harus mengembalikan `410 Gone`, bukan `404`
+- route halaman tag publik `/tag/{tagSlug}` tidak diaktifkan pada fase awal
+- halaman tag publik masuk fase lanjutan setelah validasi kebutuhan SEO dan UX
 
 ### 7.3 Detail Route Admin
 
@@ -774,6 +830,13 @@ Aturan:
 - semua route `/admin/*` wajib diproteksi auth kecuali login
 - route admin harus memakai middleware auth dan role
 - route sensitif harus dibatasi lebih ketat berdasarkan capability
+
+### 7.4 Archived Article Behavior di Route Publik
+
+- Artikel dengan `archived_at` terisi dianggap tidak aktif secara publik
+- Query halaman publik wajib selalu menambahkan kondisi `archived_at IS NULL`
+- Artikel yang diarsipkan tidak tampil di homepage, kategori, pencarian, atau RSS
+- Akses langsung ke URL artikel yang diarsipkan harus mengembalikan `410 Gone`, bukan `404`
 
 ## 8. Auth System Design
 
@@ -905,6 +968,18 @@ Approval flow wajib jelas karena ini inti operasi redaksi.
   - backup
   - queue worker fallback bila diperlukan
 
+Queue worker fallback yang dimaksud:
+
+- untuk shared hosting tanpa persistent worker, queue dijalankan melalui Scheduler atau cron
+- command yang dipakai:
+
+```bash
+php artisan queue:work --stop-when-empty
+```
+
+- command tersebut dapat dipanggil setiap menit agar job yang menunggu tetap diproses
+- pendekatan ini hanya fallback fase awal, bukan pengganti worker persisten pada environment yang lebih baik
+
 ### 9.4 Archived Article Behavior
 
 - Artikel dengan `archived_at` terisi dianggap tidak aktif secara publik
@@ -935,6 +1010,16 @@ Approval flow wajib jelas karena ini inti operasi redaksi.
 - artikel `review` tidak tampil di publik
 - artikel `published` harus lolos pemeriksaan slug, metadata minimum, dan validasi konten dasar
 - setiap transisi status harus melalui service layer
+
+### 9.7 Editor Strategy
+
+- Admin panel penulisan artikel wajib memakai rich text editor berbasis HTML
+- Format penyimpanan konten artikel fase awal adalah `HTML sanitized`, bukan Markdown
+- Editor yang direkomendasikan untuk fase awal:
+  - `Trix`
+  - atau editor ringan setara yang ramah Laravel Blade
+- Keputusan ini dipilih agar integrasi admin sederhana, output HTML mudah dirender di frontend, dan dependency tetap terkendali
+- Sanitization HTML wajib dilakukan sebelum konten disimpan atau sebelum ditampilkan bila diperlukan
 
 ## 10. Slug Strategy Detail
 
@@ -1083,7 +1168,7 @@ Logging harus membantu debugging, audit, dan monitoring tanpa menghasilkan noise
   - `error` untuk kegagalan request atau proses
   - `critical` untuk kegagalan sistem berat
 
-## 12A. Backup Strategy
+## 13. Backup Strategy
 
 - Backup database wajib dijadwalkan minimal `1x sehari` via Laravel Scheduler
 - Gunakan paket `spatie/laravel-backup` atau `mysqldump` manual via Artisan command
@@ -1096,7 +1181,7 @@ Logging harus membantu debugging, audit, dan monitoring tanpa menghasilkan noise
 - Prosedur restore wajib didokumentasikan di `docs/RECOVERY.md`
 - File `docs/RECOVERY.md` masuk TODO
 
-## 12B. Cache Strategy Detail
+## 14. Cache Strategy Detail
 
 - Yang wajib di-cache:
   - daftar kategori aktif dengan TTL `60 menit`
@@ -1114,9 +1199,9 @@ Logging harus membantu debugging, audit, dan monitoring tanpa menghasilkan noise
 - Cache key harus memakai prefix konsisten:
   - `{APP_NAME}:cache:{resource}`
 
-## 13. Fitur System
+## 15. Fitur System
 
-### 13.1 Admin Panel
+### 15.1 Admin Panel
 
 Fitur minimum:
 
@@ -1140,7 +1225,7 @@ Fitur detail:
 - pengaturan SEO default
 - pengaturan script pihak ketiga
 
-### 13.2 Frontend
+### 15.2 Frontend
 
 Fitur minimum:
 
@@ -1163,7 +1248,7 @@ Fitur detail:
 - langganan newsletter
 - CTA push notification
 
-### 13.3 Comment System Policy
+### 15.3 Comment System Policy
 
 - Fase awal: komentar diizinkan tanpa login
 - Guest comment aktif
@@ -1180,9 +1265,9 @@ Fitur detail:
 - Reply to reply tidak diizinkan
 - `ip_address` dan `user_agent` wajib dicatat untuk moderasi
 
-## 14. Fitur Advanced
+## 16. Fitur Advanced
 
-### 14.1 AI Generate
+### 16.1 AI Generate
 
 Fungsi:
 
@@ -1198,7 +1283,7 @@ Batasan:
 - wajib ada human review
 - prompt dan sumber konteks penting sebaiknya tercatat
 
-### 14.2 Scraping Legal Only
+### 16.2 Scraping Legal Only
 
 Tujuan:
 
@@ -1212,7 +1297,7 @@ Aturan keras:
 - hasil scraping tidak boleh auto-publish
 - semua hasil masuk ke review internal
 
-### 14.3 AMP
+### 16.3 AMP
 
 Tujuan:
 
@@ -1224,7 +1309,7 @@ Aturan:
 - script pihak ketiga dibatasi
 - layout harus konsisten dengan identitas brand utama
 
-### 14.4 PWA
+### 16.4 PWA
 
 Tujuan:
 
@@ -1239,7 +1324,7 @@ Komponen:
 - icon set
 - offline fallback minimal
 
-## 15. SEO System
+## 17. SEO System
 
 Wajib tersedia:
 
@@ -1264,7 +1349,7 @@ Detail implementasi:
   - `Organization`
   - `WebSite`
 
-## 16. Monetization
+## 18. Monetization
 
 Channel monetisasi target:
 
@@ -1281,7 +1366,7 @@ Aturan:
 - sponsored post harus jelas ditandai
 - affiliate harus transparan
 
-## 17. TODO System
+## 19. TODO System
 
 Format wajib:
 
@@ -1290,14 +1375,14 @@ Format wajib:
 - file terkait
 - catatan
 
-### 17.1 DONE
+### 19.1 DONE
 
 - [x] Menetapkan `docs/PROJECT_MASTER_DOC.md` sebagai single source of truth
   - Status: `DONE`
   - File terkait: `docs/PROJECT_MASTER_DOC.md`
   - Catatan: Dokumen master telah direvisi agar selaras dengan keputusan teknis terbaru
 
-### 17.2 NEED VERIFICATION
+### 19.2 NEED VERIFICATION
 
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
   - Status: `NEED VERIFICATION`
@@ -1324,7 +1409,17 @@ Format wajib:
   - File terkait: `app/Console`, `routes/console.php`
   - Catatan: Scheduler wajib tersedia untuk backup, scheduled publishing, dan flush views counter
 
-### 17.3 TODO
+- [ ] Verifikasi dukungan GD atau Imagick di hosting target
+  - Status: `NEED VERIFICATION`
+  - File terkait: `app/Services/MediaService.php`
+  - Catatan: Resize image wajib membutuhkan library dan ekstensi PHP yang kompatibel
+
+- [ ] Verifikasi pemilihan rich text editor final untuk admin
+  - Status: `NEED VERIFICATION`
+  - File terkait: `resources/views/admin`, `resources/js`
+  - Catatan: Fase awal direkomendasikan memakai Trix atau editor ringan setara
+
+### 19.3 TODO
 
 - [ ] Inisialisasi repository Git
   - Status: `TODO`
@@ -1361,6 +1456,11 @@ Format wajib:
   - File terkait: `database/migrations`
   - Catatan: `users`, `categories`, `articles`, `tags`, `article_tags`, `comments`, `ads`, `settings`, `subscribers`
 
+- [ ] Buat seeder fase awal
+  - Status: `TODO`
+  - File terkait: `database/seeders`
+  - Catatan: Harus mencakup admin default, editor default, wartawan sample, kategori default, dan setting default
+
 - [ ] Buat slug service dan rule unique slug
   - Status: `TODO`
   - File terkait: `app/Services/SlugService.php`, `app/Models`, `database/migrations`
@@ -1373,13 +1473,13 @@ Format wajib:
 
 - [ ] Implement media upload dan image processing policy
   - Status: `TODO`
-  - File terkait: `config/filesystems.php`, `app/Services`, `app/Http/Requests`, `storage/app/public`
-  - Catatan: Termasuk resize otomatis, hash filename, validasi format, ukuran maksimal 2MB, dan struktur folder upload artikel
+  - File terkait: `config/filesystems.php`, `app/Services/MediaService.php`, `app/Http/Requests`, `storage/app/public`
+  - Catatan: Termasuk resize otomatis, hash filename, validasi format, ukuran maksimal 2MB, struktur folder upload artikel, dan integrasi image library
 
 - [ ] Implement tags system
   - Status: `TODO`
-  - File terkait: `app/Models/Tag.php`, `app/Models/Article.php`, `database/migrations`, `app/Http/Controllers`
-  - Catatan: Tambahkan relasi many-to-many `articles` ke `tags` dan tabel pivot `article_tags`
+  - File terkait: `app/Models/Tag.php`, `app/Models/Article.php`, `app/Services/TagService.php`, `database/migrations`, `app/Http/Controllers`
+  - Catatan: Tambahkan relasi many-to-many `articles` ke `tags`, tabel pivot `article_tags`, dan `withTimestamps()`
 
 - [ ] Implement rate limiting untuk publik, auth, dan API
   - Status: `TODO`
@@ -1411,6 +1511,16 @@ Format wajib:
   - File terkait: `config/mail.php`, `.env`, `app/Mail`, `app/Jobs`
   - Catatan: SMTP fase awal, queue wajib, tanpa pengiriman synchronous di request cycle
 
+- [ ] Implement feature flag system
+  - Status: `TODO`
+  - File terkait: `config`, `settings`, `app/Services`
+  - Catatan: Minimal untuk AMP, AI, dan Comment on/off
+
+- [ ] Implement rich text editor admin
+  - Status: `TODO`
+  - File terkait: `resources/views/admin`, `resources/js`, `app/Http/Controllers/Admin`
+  - Catatan: Konten artikel disimpan sebagai HTML sanitized melalui editor ringan fase awal
+
 - [ ] Implement scheduled publishing via Laravel Scheduler
   - Status: `TODO`
   - File terkait: `routes/console.php`, `app/Services/ArticleService.php`, `app/Http/Controllers/Admin`
@@ -1426,7 +1536,7 @@ Format wajib:
   - File terkait: `app/Models/Comment.php`, `app/Http/Controllers`, `app/Http/Requests`, `resources/views/frontend`
   - Catatan: Guest comment aktif, status default pending, honeypot aktif, depth reply maksimal 1 level
 
-## 18. Changelog
+## 20. Changelog
 
 Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, catat di bagian ini.
 
@@ -1455,6 +1565,17 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - Scheduled Publishing & Laravel Scheduler
   - Archived Article Behavior
   - Comment System Policy
+- Merapikan struktur dokumen:
+  - urutan sub-section Route Structure
+  - normalisasi penomoran section tanpa suffix huruf
+- Menambahkan keputusan teknis tambahan:
+  - TagService dan MediaService pada folder structure
+  - `docs/RECOVERY.md` pada struktur docs
+  - rich text editor strategy untuk admin article editor
+  - image resize library strategy dan verifikasi GD/Imagick
+  - pivot timestamps policy untuk `article_tags`
+  - Seeder Strategy
+  - Feature Flag System
 - Menyesuaikan TODO agar selaras dengan keputusan teknis terbaru
 
 ### 2026-04-01
@@ -1462,11 +1583,11 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Membuat dokumen master `docs/PROJECT_MASTER_DOC.md`
 - Menetapkan docs sebagai pusat keputusan proyek
 
-## 19. Safe Development Protocol
+## 21. Safe Development Protocol
 
 Aturan ini wajib dipatuhi oleh semua developer dan AI executor.
 
-### 19.1 Protokol Inti
+### 21.1 Protokol Inti
 
 1. Baca docs sebelum coding
 2. Cek TODO
@@ -1490,14 +1611,14 @@ Larangan:
 - jangan ubah struktur utama tanpa update docs
 - jangan mengarang status implementasi
 
-### 19.2 Aturan Perubahan
+### 21.2 Aturan Perubahan
 
 - jika fitur belum dibuat, tulis sebagai `TODO`, bukan seolah sudah jadi
 - jika ada asumsi, tandai sebagai asumsi
 - jika ada area meragukan, masukkan ke `NEED VERIFICATION`
 - setiap perubahan signifikan harus memperbarui dokumen ini
 
-### 19.3 Aturan AI Baru
+### 21.3 Aturan AI Baru
 
 AI baru yang melanjutkan proyek wajib:
 
@@ -1508,7 +1629,7 @@ AI baru yang melanjutkan proyek wajib:
 5. Memperbarui docs dan changelog
 6. Commit tanpa push
 
-### 19.4 Aturan Keamanan Sistem
+### 21.4 Aturan Keamanan Sistem
 
 - validasi input wajib
 - auth dan authorization wajib
@@ -1516,7 +1637,7 @@ AI baru yang melanjutkan proyek wajib:
 - semua konfigurasi brand harus berbasis env/config
 - gunakan migration, bukan edit database manual tanpa jejak
 
-## 20. Workflow Wajib
+## 22. Workflow Wajib
 
 Workflow operasional harian:
 
@@ -1529,7 +1650,7 @@ Workflow operasional harian:
 7. Commit
 8. Jangan push
 
-## 21. Step Awal Implementasi
+## 23. Step Awal Implementasi
 
 Setelah dokumen ini, urutan kerja awal yang wajib:
 
@@ -1548,7 +1669,7 @@ Tujuan:
 - validasi editorial workflow dasar
 - validasi bahwa panel admin dan frontend bisa berjalan dari fondasi minimal
 
-## 21A. Deployment Strategy
+## 24. Deployment Strategy
 
 - Deployment ke shared hosting dilakukan manual via FTP/SFTP atau `git pull` di server
 - Tidak ada CI/CD otomatis di fase awal
@@ -1561,11 +1682,13 @@ Tujuan:
   5. `php artisan route:cache`
   6. `php artisan view:cache`
   7. `php artisan storage:link`
+  8. `php artisan queue:restart`
 - Jangan jalankan `php artisan migrate` tanpa `--force` di production
+- `php artisan queue:restart` wajib dijalankan bila queue worker aktif agar proses worker memuat kode terbaru
 - Rollback:
   - siapkan prosedur rollback migration di `docs/RECOVERY.md`
 
-## 22. Prinsip Utama Proyek
+## 25. Prinsip Utama Proyek
 
 - Docs adalah pusat sistem
 - Kode mengikuti docs
@@ -1574,7 +1697,7 @@ Tujuan:
 - Semua perubahan harus bisa dijelaskan
 - Semua perubahan harus bisa ditelusuri
 
-## 23. Keputusan Teknis Awal
+## 26. Keputusan Teknis Awal
 
 - Brand name fleksibel melalui `.env`
 - Laravel Blade + Alpine diprioritaskan pada fase awal
@@ -1586,7 +1709,7 @@ Tujuan:
 - Shared hosting compatibility adalah constraint nyata, bukan asumsi opsional
 - Implementasi awal harus sesederhana mungkin tetapi tidak boleh mengunci arsitektur menjadi buruk
 
-## 24. Status Nyata Saat Ini
+## 27. Status Nyata Saat Ini
 
 Status aktual per `2026-04-02`:
 
