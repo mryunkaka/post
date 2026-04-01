@@ -9,9 +9,10 @@
   - `APP_NAME="TodakSiring"`
   - `APP_BRAND_NAME="TodakSiring"`
 - Current repository state at document revision:
-  - Workspace belum menjadi aplikasi Laravel berjalan
-  - Belum ada database migration yang diimplementasikan
-  - Fokus saat ini masih perbaikan dokumen fondasi
+  - Workspace sudah menjadi aplikasi Laravel 13 baseline
+  - Composer dependency utama sudah terpasang
+  - Frontend baseline sudah terpasang dengan Vite, Tailwind CSS v4, Alpine.js, dan Trix
+  - Belum ada database migration inti proyek yang diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1382,6 +1383,26 @@ Format wajib:
   - File terkait: `docs/PROJECT_MASTER_DOC.md`
   - Catatan: Dokumen master telah direvisi agar selaras dengan keputusan teknis terbaru
 
+- [x] Inisialisasi repository Git
+  - Status: `DONE`
+  - File terkait: `.git`
+  - Catatan: Repository Git sudah aktif dan dipakai untuk workflow commit tanpa push
+
+- [x] Install Laravel fresh versi 13.x
+  - Status: `DONE`
+  - File terkait: `composer.json`, `artisan`, `app/`, `bootstrap/`, `config/`, `database/`, `public/`, `resources/`, `routes/`
+  - Catatan: Baseline Laravel 13 sudah terpasang dan tervalidasi melalui `php artisan --version`
+
+- [x] Install frontend baseline dan library pendukung awal
+  - Status: `DONE`
+  - File terkait: `package.json`, `package-lock.json`, `resources/js/app.js`, `resources/css/app.css`
+  - Catatan: Tailwind CSS v4 bawaan Laravel aktif, Alpine.js terintegrasi, Trix terpasang, dan build Vite berhasil
+
+- [x] Install library image processing awal
+  - Status: `DONE`
+  - File terkait: `composer.json`, `composer.lock`
+  - Catatan: `intervention/image-laravel` sudah terpasang sebagai baseline media processing
+
 ### 19.2 NEED VERIFICATION
 
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
@@ -1421,20 +1442,10 @@ Format wajib:
 
 ### 19.3 TODO
 
-- [ ] Inisialisasi repository Git
-  - Status: `TODO`
-  - File terkait: `.git`
-  - Catatan: Diperlukan agar workflow commit tanpa push dapat dijalankan disiplin
-
-- [ ] Install Laravel fresh versi 13.x
-  - Status: `TODO`
-  - File terkait: `composer.json`, `artisan`, `app/`, `bootstrap/`, `config/`, `database/`, `public/`, `resources/`, `routes/`
-  - Catatan: Langkah pertama setelah docs untuk memulai proyek riil
-
 - [ ] Setup `.env` awal dan database connection
   - Status: `TODO`
   - File terkait: `.env`
-  - Catatan: Termasuk `APP_NAME`, `APP_BRAND_NAME`, DB, cache, queue, mail
+  - Catatan: `APP_NAME`, `APP_BRAND_NAME`, dan `APP_KEY` sudah ada; sisa setup DB, cache, queue, dan mail belum final
 
 - [ ] Implement auth dasar berbasis session
   - Status: `TODO`
@@ -1576,6 +1587,16 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - pivot timestamps policy untuk `article_tags`
   - Seeder Strategy
   - Feature Flag System
+- Menginstall baseline aplikasi riil:
+  - Laravel Framework `13.3.0`
+  - Composer dependencies baseline
+  - Tailwind CSS v4 via Vite
+  - Alpine.js
+  - Trix
+  - `intervention/image-laravel`
+- Mengaktifkan bootstrap Alpine.js di `resources/js/app.js`
+- Menghasilkan build frontend awal di `public/build`
+- Menghasilkan `APP_KEY` dan menetapkan `APP_NAME` serta `APP_BRAND_NAME` di `.env`
 - Menyesuaikan TODO agar selaras dengan keputusan teknis terbaru
 
 ### 2026-04-01
@@ -1714,14 +1735,16 @@ Tujuan:
 Status aktual per `2026-04-02`:
 
 - Dokumen master: ada dan telah direvisi
-- Laravel app: belum ada
-- Git repository: belum ada
-- Database schema: masih tahap desain dokumen
+- Laravel app: ada
+- Git repository: aktif
+- Database schema inti proyek: masih tahap desain dokumen
+- Baseline frontend stack: terpasang
+- Build frontend awal: berhasil
 - Auth system: belum ada
 - CRUD artikel: belum ada
 - Admin panel: belum ada
-- Frontend publik: belum ada
+- Frontend publik kustom: belum ada
 
 Kesimpulan:
 
-Proyek saat ini berada pada fase `documentation and foundation planning`, belum masuk fase aplikasi berjalan.
+Proyek saat ini berada pada fase `foundation bootstrap`, yaitu dokumen sudah matang dan baseline aplikasi Laravel sudah berjalan, tetapi fitur inti proyek belum diimplementasikan.
