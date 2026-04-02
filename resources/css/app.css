@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'quill/dist/quill.snow.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -8,4 +9,32 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+[data-rich-editor] .ql-toolbar.ql-snow {
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    border-color: color-mix(in oklab, var(--color-stone-300) 100%, transparent);
+    background-color: white;
+}
+
+[data-rich-editor] .ql-container.ql-snow {
+    min-height: 26rem;
+    border-bottom-left-radius: 1.5rem;
+    border-bottom-right-radius: 1.5rem;
+    border-color: color-mix(in oklab, var(--color-stone-300) 100%, transparent);
+    background-color: white;
+}
+
+[data-rich-editor] .ql-editor {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--color-stone-900);
+    padding: 1rem 1.25rem;
+}
+
+[data-rich-editor] .ql-editor.ql-blank::before {
+    color: var(--color-stone-400);
+    font-style: normal;
+    left: 1.25rem;
 }

@@ -10,6 +10,8 @@
 - Menambahkan smoke test workflow artikel serta update dashboard dan navigasi internal
 - Menambahkan CRUD kategori admin dasar untuk `admin` dan `editor`
 - Menambahkan halaman admin setting situs dasar dan feature flags awal berbasis tabel `settings`
+- Menambahkan rich text editor admin berbasis Quill untuk konten artikel dengan sanitasi HTML ringan
+- Mengganti implementasi editor artikel dari Trix ke Quill karena interaksi toolbar Trix tidak stabil untuk workflow redaksi
 
 # Release Notes
 

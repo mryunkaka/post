@@ -16,6 +16,6 @@
     },
     "dependencies": {
         "alpinejs": "^3.15.10",
-        "trix": "^2.1.18"
+        "quill": "^2.0.3"
     }
 }

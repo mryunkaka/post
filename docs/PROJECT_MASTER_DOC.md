@@ -11,13 +11,14 @@
 - Current repository state at document revision:
   - Workspace sudah menjadi aplikasi Laravel 13 baseline
   - Composer dependency utama sudah terpasang
-  - Frontend baseline sudah terpasang dengan Vite, Tailwind CSS v4, Alpine.js, dan Trix
+  - Frontend baseline sudah terpasang dengan Vite, Tailwind CSS v4, Alpine.js, dan editor admin Quill
   - Database migration inti proyek sudah diimplementasikan
   - Seeder fase awal dan auth session baseline sudah diimplementasikan
   - CRUD artikel internal dasar sudah diimplementasikan
   - Slug service dan route admin artikel dasar sudah diimplementasikan
   - Manajemen kategori admin dasar sudah diimplementasikan
   - Setting situs admin dasar dan feature flag awal sudah diimplementasikan
+  - Rich text editor admin dasar untuk artikel sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1053,7 +1054,7 @@ php artisan queue:work --stop-when-empty
 - Admin panel penulisan artikel wajib memakai rich text editor berbasis HTML
 - Format penyimpanan konten artikel fase awal adalah `HTML sanitized`, bukan Markdown
 - Editor yang direkomendasikan untuk fase awal:
-  - `Trix`
+  - `Quill`
   - atau editor ringan setara yang ramah Laravel Blade
 - Keputusan ini dipilih agar integrasi admin sederhana, output HTML mudah dirender di frontend, dan dependency tetap terkendali
 - Sanitization HTML wajib dilakukan sebelum konten disimpan atau sebelum ditampilkan bila diperlukan
@@ -1573,10 +1574,10 @@ Format wajib:
   - File terkait: `app/Models/Setting.php`, `app/Services/SettingService.php`, `app/Http/Controllers/Admin/SettingController.php`, `app/Http/Requests/Admin/UpdateSiteSettingRequest.php`, `database/seeders/SettingSeeder.php`, `resources/views/admin/settings`, `tests/Feature/AdminSettingManagementTest.php`
   - Catatan: Feature flag AMP, AI, dan Comment sudah disimpan di `settings` table dan dapat diubah dari admin setting dasar
 
-- [ ] Implement rich text editor admin
-  - Status: `TODO`
-  - File terkait: `resources/views/admin`, `resources/js`, `app/Http/Controllers/Admin`
-  - Catatan: Konten artikel disimpan sebagai HTML sanitized melalui editor ringan fase awal
+- [x] Implement rich text editor admin
+  - Status: `DONE`
+  - File terkait: `resources/views/admin/articles`, `resources/js/app.js`, `resources/css/app.css`, `app/Services/ArticleService.php`
+  - Catatan: Editor artikel admin fase awal memakai Quill, upload file dari editor dinonaktifkan, dan konten HTML dinormalisasi saat disimpan
 
 - [ ] Implement scheduled publishing via Laravel Scheduler
   - Status: `TODO`
@@ -1712,6 +1713,12 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - `feature_ai_enabled`
   - `feature_comment_enabled`
 - Memperbarui `docs/MANUAL_DATABASE_SEEDERS.sql` agar sinkron dengan default settings terbaru
+- Mengimplementasikan rich text editor admin dasar untuk artikel:
+  - mengaktifkan `Quill` di asset frontend
+  - mengganti textarea konten artikel menjadi editor HTML ringan
+  - menonaktifkan upload file langsung dari editor sampai modul media siap
+  - menambahkan sanitasi HTML ringan di `ArticleService`
+- Mengganti implementasi editor artikel dari `Trix` ke `Quill` karena toolbar Trix tidak stabil dipakai pada workflow redaksi yang sedang diuji
 
 ### 2026-04-01
 
@@ -1922,6 +1929,7 @@ Status aktual per `2026-04-02`:
 - Admin panel: sudah tersedia minimal untuk artikel dan kategori
 - Setting situs admin dasar: sudah ada
 - Feature flag system dasar: sudah ada
+- Rich text editor artikel admin dasar: sudah ada
 - Frontend publik kustom: belum ada
 
 Kesimpulan:

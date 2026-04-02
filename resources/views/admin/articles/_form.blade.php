@@ -28,9 +28,9 @@
 
                 <div>
                     <x-input-label for="content" value="Konten" />
-                    <textarea id="content" name="content" rows="18"
-                        class="mt-2 block w-full rounded-3xl border-stone-300 text-sm text-stone-900 shadow-sm focus:border-amber-500 focus:ring-amber-500"
-                        required>{{ old('content', $article->content) }}</textarea>
+                    <input id="content" type="hidden" name="content" value="{{ old('content', $article->content) }}">
+                    <div data-rich-editor data-input="content" class="mt-2 block w-full"></div>
+                    <p class="mt-2 text-xs text-stone-500">Editor artikel memakai format HTML ringan. Upload media akan ditambahkan lewat modul media terpisah.</p>
                     <x-input-error class="mt-2" :messages="$errors->get('content')" />
                 </div>
             </div>

@@ -134,7 +134,7 @@ class ArticleService
             'title' => $title,
             'slug' => $this->slugService->generateUniqueSlug($slugSource, Article::class, 'slug', $article),
             'excerpt' => $this->nullableString($data, 'excerpt'),
-            'content' => trim((string) $data['content']),
+            'content' => $this->sanitizeHtml((string) $data['content']),
             'meta_title' => $this->nullableString($data, 'meta_title'),
             'meta_description' => $this->nullableString($data, 'meta_description'),
             'schema_type' => Arr::get($data, 'schema_type', 'NewsArticle') ?: 'NewsArticle',
@@ -161,5 +161,18 @@ class ArticleService
     protected function ownsArticle(User $actor, Article $article): bool
     {
         return (int) $article->user_id === (int) $actor->id;
+    }
+
+    protected function sanitizeHtml(string $value): string
+    {
+        $value = trim($value);
+
+        $allowedTags = '<a><blockquote><br><code><div><em><figcaption><figure><h1><h2><h3><h4><h5><h6><li><ol><p><pre><strong><ul>';
+        $sanitized = strip_tags($value, $allowedTags);
+        $sanitized = preg_replace('/\s+on\w+="[^"]*"/i', '', $sanitized) ?? $sanitized;
+        $sanitized = preg_replace("/\s+on\w+='[^']*'/i", '', $sanitized) ?? $sanitized;
+        $sanitized = preg_replace('/javascript:/i', '', $sanitized) ?? $sanitized;
+
+        return $sanitized;
     }
 }
