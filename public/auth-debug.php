@@ -41,6 +41,11 @@ $rawUser = DB::table('users')
     ->where('email', $email)
     ->first();
 
+$sqlProbe = DB::selectOne(
+    'SELECT id + 0 AS id_num, email, role, is_active + 0 AS is_active_num, CHAR_LENGTH(password) AS pw_len, HEX(LEFT(password, 8)) AS pw_hex FROM users WHERE email = ? LIMIT 1',
+    [$email]
+);
+
 echo "\n=== Raw DB Row ===\n";
 
 if (! $rawUser) {
@@ -52,6 +57,20 @@ if (! $rawUser) {
     echo 'Raw is_active: '.((string) ($rawUser->is_active ?? 'NULL'))."\n";
     echo 'Raw hash length: '.strlen((string) ($rawUser->password ?? ''))."\n";
     echo 'Raw hash prefix: '.substr((string) ($rawUser->password ?? ''), 0, 20)."...\n";
+}
+
+echo "\n=== SQL Probe ===\n";
+
+if (! $sqlProbe) {
+    echo "SQL probe: NO\n";
+} else {
+    echo "SQL probe: YES\n";
+    echo 'SQL id_num: '.($sqlProbe->id_num ?? 'NULL')."\n";
+    echo 'SQL email: '.($sqlProbe->email ?? 'NULL')."\n";
+    echo 'SQL role: '.($sqlProbe->role ?? 'NULL')."\n";
+    echo 'SQL is_active_num: '.($sqlProbe->is_active_num ?? 'NULL')."\n";
+    echo 'SQL pw_len: '.($sqlProbe->pw_len ?? 'NULL')."\n";
+    echo 'SQL pw_hex: '.($sqlProbe->pw_hex ?? 'NULL')."\n";
 }
 
 $user = User::query()->where('email', $email)->first();
