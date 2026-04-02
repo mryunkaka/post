@@ -16,6 +16,7 @@
   - Seeder fase awal dan auth session baseline sudah diimplementasikan
   - CRUD artikel internal dasar sudah diimplementasikan
   - Slug service dan route admin artikel dasar sudah diimplementasikan
+  - Manajemen kategori admin dasar sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1521,10 +1522,10 @@ Format wajib:
   - File terkait: `app/Services/SlugService.php`, `app/Services/ArticleService.php`, `app/Models/Article.php`, `tests/Feature/AdminArticleWorkflowTest.php`
   - Catatan: Sudah mendukung auto generate slug dari judul, fallback default slug, dan duplicate handling numerik
 
-- [ ] Siapkan admin panel minimal
-  - Status: `TODO`
-  - File terkait: `routes/admin.php`, `resources/views/admin`, `app/Http/Controllers/Admin`
-  - Catatan: Fokus pada artikel, kategori, setting awal
+- [x] Siapkan admin panel minimal
+  - Status: `DONE`
+  - File terkait: `routes/admin.php`, `resources/views/admin`, `app/Http/Controllers/Admin`, `app/Http/Requests/Admin`, `tests/Feature/AdminCategoryManagementTest.php`
+  - Catatan: Admin panel internal dasar untuk artikel dan kategori sudah aktif; manajemen setting awal masih menjadi langkah berikutnya
 
 - [ ] Implement media upload dan image processing policy
   - Status: `TODO`
@@ -1693,6 +1694,12 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - `editor` dapat menghapus artikel berstatus `draft` dan `review`
   - `wartawan` tidak dapat menghapus artikel
 - Memperbaiki authorization artikel untuk shared hosting dengan normalisasi tipe `user_id` agar wartawan tetap dapat membuka artikel miliknya sendiri walau driver MySQL mengembalikan foreign key sebagai string
+- Menambahkan CRUD kategori admin dasar untuk `admin` dan `editor` melalui:
+  - `CategoryController`
+  - request validation kategori admin
+  - view Blade admin kategori untuk index, create, dan edit
+  - navigasi admin ke modul kategori
+  - test akses kategori untuk `editor` dan pembatasan `wartawan`
 
 ### 2026-04-01
 
@@ -1900,7 +1907,7 @@ Status aktual per `2026-04-02`:
 - Role middleware: sudah ada
 - CRUD artikel: sudah ada untuk workflow internal dasar
 - Slug service: sudah ada
-- Admin panel: baru tersedia minimal untuk artikel
+- Admin panel: sudah tersedia minimal untuk artikel dan kategori
 - Frontend publik kustom: belum ada
 
 Kesimpulan:

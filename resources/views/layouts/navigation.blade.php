@@ -18,6 +18,11 @@
                     <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
                         {{ __('Artikel') }}
                     </x-nav-link>
+                    @if (in_array(Auth::user()->role, ['admin', 'editor'], true))
+                        <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                            {{ __('Kategori') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -79,6 +84,11 @@
             <x-responsive-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
                 {{ __('Artikel') }}
             </x-responsive-nav-link>
+            @if (in_array(Auth::user()->role, ['admin', 'editor'], true))
+                <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                    {{ __('Kategori') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

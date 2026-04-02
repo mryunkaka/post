@@ -8,6 +8,7 @@
 - Menambahkan `SlugService` dan `ArticleService` sebagai service layer awal artikel
 - Menambahkan route admin artikel, request validation, model artikel/kategori, dan view Blade admin artikel
 - Menambahkan smoke test workflow artikel serta update dashboard dan navigasi internal
+- Menambahkan CRUD kategori admin dasar untuk `admin` dan `editor`
 
 # Release Notes
 
