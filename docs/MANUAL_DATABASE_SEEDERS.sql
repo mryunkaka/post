@@ -119,6 +119,46 @@ INSERT INTO settings (
     1,
     NOW(),
     NOW()
+),
+(
+    'general',
+    'site_tagline',
+    'Portal berita modern untuk redaksi digital.',
+    1,
+    NOW(),
+    NOW()
+),
+(
+    'general',
+    'contact_email',
+    'redaksi@local.test',
+    1,
+    NOW(),
+    NOW()
+),
+(
+    'feature',
+    'feature_amp_enabled',
+    '0',
+    1,
+    NOW(),
+    NOW()
+),
+(
+    'feature',
+    'feature_ai_enabled',
+    '0',
+    1,
+    NOW(),
+    NOW()
+),
+(
+    'feature',
+    'feature_comment_enabled',
+    '0',
+    1,
+    NOW(),
+    NOW()
 )
 ON DUPLICATE KEY UPDATE
     `group` = VALUES(`group`),

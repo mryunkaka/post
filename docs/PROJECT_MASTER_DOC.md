@@ -17,6 +17,7 @@
   - CRUD artikel internal dasar sudah diimplementasikan
   - Slug service dan route admin artikel dasar sudah diimplementasikan
   - Manajemen kategori admin dasar sudah diimplementasikan
+  - Setting situs admin dasar dan feature flag awal sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1567,10 +1568,10 @@ Format wajib:
   - File terkait: `config/mail.php`, `.env`, `app/Mail`, `app/Jobs`
   - Catatan: SMTP fase awal, queue wajib, tanpa pengiriman synchronous di request cycle
 
-- [ ] Implement feature flag system
-  - Status: `TODO`
-  - File terkait: `config`, `settings`, `app/Services`
-  - Catatan: Minimal untuk AMP, AI, dan Comment on/off
+- [x] Implement feature flag system
+  - Status: `DONE`
+  - File terkait: `app/Models/Setting.php`, `app/Services/SettingService.php`, `app/Http/Controllers/Admin/SettingController.php`, `app/Http/Requests/Admin/UpdateSiteSettingRequest.php`, `database/seeders/SettingSeeder.php`, `resources/views/admin/settings`, `tests/Feature/AdminSettingManagementTest.php`
+  - Catatan: Feature flag AMP, AI, dan Comment sudah disimpan di `settings` table dan dapat diubah dari admin setting dasar
 
 - [ ] Implement rich text editor admin
   - Status: `TODO`
@@ -1700,6 +1701,17 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - view Blade admin kategori untuk index, create, dan edit
   - navigasi admin ke modul kategori
   - test akses kategori untuk `editor` dan pembatasan `wartawan`
+- Menambahkan manajemen setting situs dasar untuk `admin` melalui:
+  - `SettingController`
+  - `SettingService`
+  - model `Setting`
+  - halaman admin setting
+  - default settings tambahan untuk tagline, contact email, dan feature flags
+- Mengimplementasikan feature flag awal:
+  - `feature_amp_enabled`
+  - `feature_ai_enabled`
+  - `feature_comment_enabled`
+- Memperbarui `docs/MANUAL_DATABASE_SEEDERS.sql` agar sinkron dengan default settings terbaru
 
 ### 2026-04-01
 
@@ -1908,6 +1920,8 @@ Status aktual per `2026-04-02`:
 - CRUD artikel: sudah ada untuk workflow internal dasar
 - Slug service: sudah ada
 - Admin panel: sudah tersedia minimal untuk artikel dan kategori
+- Setting situs admin dasar: sudah ada
+- Feature flag system dasar: sudah ada
 - Frontend publik kustom: belum ada
 
 Kesimpulan:

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin,editor,wartawan'])
@@ -17,5 +18,10 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
 
         Route::middleware('role:admin,editor')->group(function (): void {
             Route::resource('categories', CategoryController::class)->except('show');
+        });
+
+        Route::middleware('role:admin')->group(function (): void {
+            Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+            Route::patch('settings', [SettingController::class, 'update'])->name('settings.update');
         });
     });

@@ -25,6 +25,31 @@ class SettingSeeder extends Seeder
                 'key' => 'site_description',
                 'value' => 'Portal berita modern berbasis Laravel untuk workflow editorial, SEO, dan monetisasi.',
             ],
+            [
+                'group' => 'general',
+                'key' => 'site_tagline',
+                'value' => 'Portal berita modern untuk redaksi digital.',
+            ],
+            [
+                'group' => 'general',
+                'key' => 'contact_email',
+                'value' => 'redaksi@local.test',
+            ],
+            [
+                'group' => 'feature',
+                'key' => 'feature_amp_enabled',
+                'value' => '0',
+            ],
+            [
+                'group' => 'feature',
+                'key' => 'feature_ai_enabled',
+                'value' => '0',
+            ],
+            [
+                'group' => 'feature',
+                'key' => 'feature_comment_enabled',
+                'value' => '0',
+            ],
         ];
 
         foreach ($settings as $setting) {

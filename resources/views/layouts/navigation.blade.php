@@ -23,6 +23,11 @@
                             {{ __('Kategori') }}
                         </x-nav-link>
                     @endif
+                    @if (Auth::user()->role === 'admin')
+                        <x-nav-link :href="route('admin.settings.edit')" :active="request()->routeIs('admin.settings.*')">
+                            {{ __('Setting') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -87,6 +92,11 @@
             @if (in_array(Auth::user()->role, ['admin', 'editor'], true))
                 <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     {{ __('Kategori') }}
+                </x-responsive-nav-link>
+            @endif
+            @if (Auth::user()->role === 'admin')
+                <x-responsive-nav-link :href="route('admin.settings.edit')" :active="request()->routeIs('admin.settings.*')">
+                    {{ __('Setting') }}
                 </x-responsive-nav-link>
             @endif
         </div>

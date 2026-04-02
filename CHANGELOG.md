@@ -9,6 +9,7 @@
 - Menambahkan route admin artikel, request validation, model artikel/kategori, dan view Blade admin artikel
 - Menambahkan smoke test workflow artikel serta update dashboard dan navigasi internal
 - Menambahkan CRUD kategori admin dasar untuk `admin` dan `editor`
+- Menambahkan halaman admin setting situs dasar dan feature flags awal berbasis tabel `settings`
 
 # Release Notes
 
