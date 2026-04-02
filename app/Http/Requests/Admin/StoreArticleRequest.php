@@ -34,6 +34,7 @@ class StoreArticleRequest extends FormRequest
             'meta_description' => ['nullable', 'string', 'max:255'],
             'schema_type' => ['required', 'string', 'max:100'],
             'is_featured' => ['nullable', 'boolean'],
+            'published_at' => ['nullable', 'date'],
         ];
     }
 }

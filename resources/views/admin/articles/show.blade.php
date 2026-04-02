@@ -41,6 +41,11 @@
                     <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900">
                         {{ $article->status }}
                     </span>
+                    @if ($article->archived_at)
+                        <span class="inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-900">
+                            archived
+                        </span>
+                    @endif
                     <span class="inline-flex rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-700">
                         {{ $article->category->name }}
                     </span>
@@ -67,6 +72,10 @@
                     <div>
                         <dt class="font-semibold text-stone-900">Schema Type</dt>
                         <dd class="mt-1">{{ $article->schema_type }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-stone-900">Archived At</dt>
+                        <dd class="mt-1">{{ $article->archived_at?->format('d M Y H:i') ?? '-' }}</dd>
                     </div>
                 </dl>
 

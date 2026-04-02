@@ -92,11 +92,33 @@ class ArticleController extends Controller
 
     public function publish(Request $request, Article $article): RedirectResponse
     {
-        $this->articleService->publish($request->user(), $article);
+        $article = $this->articleService->publish($request->user(), $article);
+
+        $message = $article->status === 'published'
+            ? 'Artikel berhasil dipublish.'
+            : 'Artikel berhasil dijadwalkan publish.';
 
         return redirect()
             ->route('admin.articles.edit', $article)
-            ->with('status', 'Artikel berhasil dipublish.');
+            ->with('status', $message);
+    }
+
+    public function archive(Request $request, Article $article): RedirectResponse
+    {
+        $this->articleService->archive($request->user(), $article);
+
+        return redirect()
+            ->route('admin.articles.edit', $article)
+            ->with('status', 'Artikel berhasil diarsipkan.');
+    }
+
+    public function restore(Request $request, Article $article): RedirectResponse
+    {
+        $this->articleService->restore($request->user(), $article);
+
+        return redirect()
+            ->route('admin.articles.edit', $article)
+            ->with('status', 'Artikel arsip berhasil dipulihkan.');
     }
 
     public function destroy(Request $request, Article $article): RedirectResponse

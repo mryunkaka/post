@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 
 class ArticleService
 {
@@ -27,7 +28,6 @@ class ArticleService
         $article->fill($this->preparePayload($data, $article));
         $article->author()->associate($actor);
         $article->status = 'draft';
-        $article->published_at = null;
         $article->save();
         $this->tagService->syncArticleTags($article, Arr::get($data, 'tags'));
         $this->frontCacheService->flushArticleRelatedCaches();
@@ -61,7 +61,6 @@ class ArticleService
         $article->forceFill([
             'status' => 'review',
             'review_notes' => null,
-            'published_at' => null,
         ])->save();
         $this->frontCacheService->flushArticleRelatedCaches();
 
@@ -78,13 +77,74 @@ class ArticleService
             throw new AuthorizationException('Artikel arsip tidak dapat dipublish.');
         }
 
+        $scheduledAt = $article->published_at;
+
+        if ($scheduledAt instanceof Carbon && $scheduledAt->isFuture()) {
+            $article->forceFill([
+                'status' => 'review',
+            ])->save();
+            $this->frontCacheService->flushArticleRelatedCaches();
+
+            return $article->refresh();
+        }
+
         $article->forceFill([
             'status' => 'published',
-            'published_at' => now(),
+            'published_at' => $scheduledAt instanceof Carbon ? $scheduledAt : now(),
         ])->save();
         $this->frontCacheService->flushArticleRelatedCaches();
 
         return $article->refresh();
+    }
+
+    public function archive(User $actor, Article $article): Article
+    {
+        if (! in_array($actor->role, ['admin', 'editor'], true)) {
+            throw new AuthorizationException('Hanya admin dan editor yang dapat mengarsipkan artikel.');
+        }
+
+        $article->forceFill([
+            'archived_at' => now(),
+        ])->save();
+        $this->frontCacheService->flushArticleRelatedCaches();
+
+        return $article->refresh();
+    }
+
+    public function restore(User $actor, Article $article): Article
+    {
+        if (! in_array($actor->role, ['admin', 'editor'], true)) {
+            throw new AuthorizationException('Hanya admin dan editor yang dapat memulihkan artikel arsip.');
+        }
+
+        $article->forceFill([
+            'archived_at' => null,
+        ])->save();
+        $this->frontCacheService->flushArticleRelatedCaches();
+
+        return $article->refresh();
+    }
+
+    public function publishDueArticles(): int
+    {
+        $articles = Article::query()
+            ->where('status', 'review')
+            ->whereNull('archived_at')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->get();
+
+        foreach ($articles as $article) {
+            $article->forceFill([
+                'status' => 'published',
+            ])->save();
+        }
+
+        if ($articles->isNotEmpty()) {
+            $this->frontCacheService->flushArticleRelatedCaches();
+        }
+
+        return $articles->count();
     }
 
     public function delete(User $actor, Article $article): void
@@ -154,6 +214,7 @@ class ArticleService
             'meta_description' => $this->nullableString($data, 'meta_description'),
             'schema_type' => Arr::get($data, 'schema_type', 'NewsArticle') ?: 'NewsArticle',
             'is_featured' => (bool) Arr::get($data, 'is_featured', false),
+            'published_at' => $this->nullableDateTime($data, 'published_at'),
         ];
     }
 
@@ -171,6 +232,22 @@ class ArticleService
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function nullableDateTime(array $data, string $key): ?Carbon
+    {
+        $value = Arr::get($data, $key);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : Carbon::parse($value);
     }
 
     protected function ownsArticle(User $actor, Article $article): bool

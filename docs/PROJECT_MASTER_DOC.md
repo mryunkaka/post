@@ -1586,15 +1586,15 @@ Format wajib:
   - File terkait: `resources/views/admin/articles`, `resources/js/app.js`, `resources/css/app.css`, `app/Services/ArticleService.php`
   - Catatan: Editor artikel admin fase awal memakai Quill, upload file dari editor dinonaktifkan, dan konten HTML dinormalisasi saat disimpan
 
-- [ ] Implement scheduled publishing via Laravel Scheduler
-  - Status: `TODO`
+- [x] Implement scheduled publishing via Laravel Scheduler
+  - Status: `DONE`
   - File terkait: `routes/console.php`, `app/Services/ArticleService.php`, `app/Http/Controllers/Admin`
-  - Catatan: Artikel `published` dengan `published_at` masa depan tidak boleh tampil sebelum waktunya
+  - Catatan: Artikel dengan `published_at` masa depan kini dapat dijadwalkan dari admin, status tetap non-publik sampai due time, dan scheduler mempublish otomatis tiap menit
 
-- [ ] Implement archived article behavior
-  - Status: `TODO`
+- [x] Implement archived article behavior
+  - Status: `DONE`
   - File terkait: `app/Http/Controllers/Front`, `app/Services/ArticleService.php`, `routes`
-  - Catatan: Query publik wajib filter `archived_at IS NULL`; akses direct ke artikel arsip harus `410 Gone`
+  - Catatan: Artikel arsip kini bisa diarsipkan/pulihkan dari admin, query publik tetap mengecualikan arsip, dan akses direct ke URL artikel arsip mengembalikan `410 Gone`
 
 - [ ] Implement guest comment policy dan moderation flow
   - Status: `TODO`
@@ -1955,7 +1955,9 @@ Status aktual per `2026-04-02`:
 - Pagination frontend kategori dan pencarian: sudah ada
 - Cache frontend dasar: sudah ada
 - Views counter buffering dasar: sudah ada
+- Scheduled publishing dasar: sudah ada
+- Archive behavior publik dasar: sudah ada
 
 Kesimpulan:
 
-Proyek saat ini berada pada fase `foundation + public baseline`, yaitu fondasi admin internal dan frontend publik minimum sudah aktif, sementara fitur operasional lanjutan seperti rate limiting, backup, mail async, scheduled publishing, archive behavior, dan komentar masih belum selesai.
+Proyek saat ini berada pada fase `foundation + public baseline`, yaitu fondasi admin internal dan frontend publik minimum sudah aktif, sementara fitur operasional lanjutan yang tersisa berfokus pada rate limiting, backup, mail async, dan komentar.

@@ -103,6 +103,14 @@
                 </div>
 
                 <div>
+                    <x-input-label for="published_at" value="Publish At" />
+                    <x-text-input id="published_at" name="published_at" type="datetime-local" class="mt-2 block w-full"
+                        :value="old('published_at', $article->published_at?->format('Y-m-d\\TH:i'))" />
+                    <p class="mt-2 text-xs text-stone-500">Jika diisi waktu masa depan lalu klik Publish, artikel akan dijadwalkan otomatis.</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('published_at')" />
+                </div>
+
+                <div>
                     <x-input-label for="meta_title" value="Meta Title" />
                     <x-text-input id="meta_title" name="meta_title" type="text" class="mt-2 block w-full"
                         :value="old('meta_title', $article->meta_title)" />
@@ -146,6 +154,10 @@
                     <dt class="text-stone-400">Publish</dt>
                     <dd>{{ $article->published_at?->format('d M Y H:i') ?? '-' }}</dd>
                 </div>
+                <div class="flex items-center justify-between gap-3">
+                    <dt class="text-stone-400">Arsip</dt>
+                    <dd>{{ $article->archived_at?->format('d M Y H:i') ?? '-' }}</dd>
+                </div>
             </dl>
 
             <div class="mt-6 flex flex-wrap gap-3">
@@ -162,6 +174,20 @@
                     <button type="submit" form="publish-form"
                         class="inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-300">
                         Publish
+                    </button>
+                @endif
+
+                @if ($article->exists && in_array(auth()->user()->role, ['admin', 'editor'], true) && $article->archived_at === null)
+                    <button type="submit" form="archive-form"
+                        class="inline-flex items-center rounded-full border border-rose-400/40 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:border-rose-300 hover:text-white">
+                        Arsipkan
+                    </button>
+                @endif
+
+                @if ($article->exists && in_array(auth()->user()->role, ['admin', 'editor'], true) && $article->archived_at !== null)
+                    <button type="submit" form="restore-form"
+                        class="inline-flex items-center rounded-full border border-emerald-400/40 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300 hover:text-white">
+                        Pulihkan
                     </button>
                 @endif
             </div>

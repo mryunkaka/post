@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Services\ArticleViewBufferService;
 use App\Services\FrontCacheService;
+use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 
 class ArticleController extends Controller
 {
@@ -17,10 +18,20 @@ class ArticleController extends Controller
     public function show(string $articleSlug)
     {
         $article = Article::query()
-            ->publiclyVisible()
             ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug'])
             ->where('slug', $articleSlug)
             ->firstOrFail();
+
+        if ($article->archived_at !== null) {
+            throw new GoneHttpException('Artikel ini telah diarsipkan.');
+        }
+
+        abort_unless(
+            $article->status === 'published'
+                && $article->published_at !== null
+                && $article->published_at->lte(now()),
+            404
+        );
 
         $this->articleViewBufferService->record($article);
 

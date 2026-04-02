@@ -17,6 +17,7 @@
 - Menambahkan sistem tag artikel dasar dengan sinkronisasi many-to-many dan input comma-separated di admin
 - Menambahkan frontend publik dasar untuk homepage, detail artikel, kategori, dan pencarian dengan pagination 15 item
 - Menambahkan cache strategy dasar untuk kategori aktif, settings autoload, homepage, artikel populer, dan buffer views artikel dengan flush scheduler
+- Menambahkan scheduled publishing dasar dan archive behavior publik dengan respons `410 Gone` untuk artikel arsip
 
 # Release Notes
 

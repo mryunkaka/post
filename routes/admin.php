@@ -15,6 +15,12 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
         Route::patch('articles/{article}/publish', [ArticleController::class, 'publish'])
             ->middleware('role:admin,editor')
             ->name('articles.publish');
+        Route::patch('articles/{article}/archive', [ArticleController::class, 'archive'])
+            ->middleware('role:admin,editor')
+            ->name('articles.archive');
+        Route::patch('articles/{article}/restore', [ArticleController::class, 'restore'])
+            ->middleware('role:admin,editor')
+            ->name('articles.restore');
 
         Route::middleware('role:admin,editor')->group(function (): void {
             Route::resource('categories', CategoryController::class)->except('show');

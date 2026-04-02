@@ -66,6 +66,28 @@ class AdminArticleWorkflowTest extends TestCase
         $this->assertNotNull($article->published_at);
     }
 
+    public function test_editor_can_schedule_article_publish(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $category = Category::factory()->create();
+        $article = Article::factory()->create([
+            'status' => 'review',
+            'category_id' => $category->id,
+            'published_at' => now()->addHour(),
+        ]);
+
+        $this->actingAs($editor)
+            ->patch(route('admin.articles.publish', $article))
+            ->assertRedirect(route('admin.articles.edit', $article));
+
+        $article->refresh();
+
+        $this->assertSame('review', $article->status);
+        $this->assertTrue($article->published_at->isFuture());
+    }
+
     public function test_wartawan_cannot_edit_other_users_article(): void
     {
         $user = User::factory()->create([

@@ -50,6 +50,16 @@
                 @csrf
                 @method('PATCH')
             </form>
+
+            <form id="archive-form" method="POST" action="{{ route('admin.articles.archive', $article) }}">
+                @csrf
+                @method('PATCH')
+            </form>
+
+            <form id="restore-form" method="POST" action="{{ route('admin.articles.restore', $article) }}">
+                @csrf
+                @method('PATCH')
+            </form>
         </div>
     </div>
 </x-app-layout>
