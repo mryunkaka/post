@@ -1671,6 +1671,7 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Mengubah protokol Git:
   - tidak lagi merekomendasikan `git add .`
   - AI executor hanya merekomendasikan nama commit kecuali user meminta commit eksplisit
+- Menambahkan referensi script auto deploy cron untuk shared hosting di `scripts/deploy-cron-post.php`
 
 ### 2026-04-01
 
@@ -1782,6 +1783,7 @@ Tujuan:
 - Deployment ke shared hosting dilakukan manual via FTP/SFTP atau `git pull` di server
 - Tidak ada CI/CD otomatis di fase awal
 - Deployment manual adalah baseline
+- Untuk shared hosting tanpa SSH penuh, auto deploy dapat dijalankan via cron menggunakan script PHP CLI
 - Urutan langkah deployment wajib:
   1. Upload atau pull kode terbaru
   2. `composer install --no-dev --optimize-autoloader`
@@ -1795,6 +1797,32 @@ Tujuan:
 - `php artisan queue:restart` wajib dijalankan bila queue worker aktif agar proses worker memuat kode terbaru
 - Rollback:
   - siapkan prosedur rollback migration di `docs/RECOVERY.md`
+
+### 24.1 Cron Git Auto Deploy
+
+- File referensi deploy cron disimpan di `scripts/deploy-cron-post.php`
+- Target hosting yang digunakan:
+  - repo deploy path: `/home/hark8423/public_html/post`
+  - branch: `main`
+  - remote: `origin`
+  - log file: `/home/hark8423/git-deploy-post.log`
+- Script deploy cron wajib dijalankan melalui CLI PHP, bukan diakses publik via browser
+- Contoh cron:
+
+```bash
+/usr/bin/php /home/hark8423/public_html/deploy-cron-post.php
+```
+
+- Jika file dipindahkan ke luar repo atau ke `/home/hark8423/public_html/deploy-cron-post.php`, isi script harus tetap mengarah ke path repo sebenarnya
+- Auto deploy Git harus menjaga file runtime dan file manual berikut agar tidak terhapus saat `git clean`:
+  - `.env`
+  - `storage/`
+  - `vendor/`
+  - `public/storage`
+- `vendor/` tetap diperlakukan sebagai upload manual pada shared hosting ini dan tidak boleh dihapus oleh script deploy
+- `public/build` tetap diperlakukan sebagai bagian dari deploy Git
+- Script deploy harus memakai lock file agar dua proses deploy tidak berjalan bersamaan
+- Script deploy boleh mencatat commit yang terdeploy ke log file agar mudah diaudit
 
 ## 25. Prinsip Utama Proyek
 
