@@ -12,7 +12,8 @@
   - Workspace sudah menjadi aplikasi Laravel 13 baseline
   - Composer dependency utama sudah terpasang
   - Frontend baseline sudah terpasang dengan Vite, Tailwind CSS v4, Alpine.js, dan Trix
-  - Belum ada database migration inti proyek yang diimplementasikan
+  - Database migration inti proyek sudah diimplementasikan
+  - Seeder fase awal dan auth session baseline sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -878,6 +879,8 @@ Keputusan arsitektur saat ini:
 
 - fase bootstrap direkomendasikan memakai `Laravel Breeze` untuk mempercepat fondasi auth berbasis session
 - manual auth hanya dipilih bila terdapat kebutuhan UI atau flow admin yang tidak cocok dengan struktur Breeze
+- implementasi baseline saat ini memakai `Laravel Breeze` dengan stack Blade
+- registrasi publik, email verification flow, dan password reset publik tidak diaktifkan pada baseline awal
 
 ### 8.2 Session vs Token
 
@@ -920,6 +923,7 @@ Prinsip:
 - session dibuat setelah kredensial valid
 - middleware menentukan area yang boleh diakses
 - logout menghancurkan session
+- registrasi user baru tidak dibuka ke publik pada fase awal
 
 ## 9. Article Approval Flow Detail
 
@@ -1452,6 +1456,11 @@ Format wajib:
   - File terkait: `docs/MANUAL_DATABASE_SCHEMA.sql`, `docs/MANUAL_DATABASE_SEEDERS.sql`
   - Catatan: SQL manual dibuat dari migration dan seeder aktual agar deploy shared hosting tetap bisa dilakukan tanpa artisan migrate atau db:seed
 
+- [x] Implement auth dasar berbasis session
+  - Status: `DONE`
+  - File terkait: `routes/web.php`, `routes/auth.php`, `app/Http/Controllers/Auth`, `app/Http/Controllers/ProfileController.php`, `resources/views/auth`, `resources/views/layouts`, `resources/views/profile`, `resources/views/dashboard.blade.php`
+  - Catatan: Baseline auth memakai Laravel Breeze Blade, login/logout/profile aktif, dan registrasi publik dinonaktifkan untuk menyesuaikan role internal proyek
+
 ### 19.2 NEED VERIFICATION
 
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
@@ -1490,11 +1499,6 @@ Format wajib:
   - Catatan: Fase awal direkomendasikan memakai Trix atau editor ringan setara
 
 ### 19.3 TODO
-
-- [ ] Implement auth dasar berbasis session
-  - Status: `TODO`
-  - File terkait: `routes`, `app/Http/Controllers`, `resources/views`
-  - Catatan: Gunakan Breeze atau manual auth sesuai keputusan implementasi final
 
 - [ ] Implement role middleware untuk admin, editor, wartawan
   - Status: `TODO`
@@ -1653,6 +1657,10 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Menyesuaikan TODO agar selaras dengan keputusan teknis terbaru
 - Menginstall `spatie/laravel-image-optimizer` sebagai baseline optimasi ukuran file media
 - Menambahkan konfigurasi awal `config/image-optimizer.php` untuk JPEG, PNG, GIF, SVG, dan WebP
+- Menginstall `laravel/breeze` sebagai baseline auth session berbasis Blade
+- Mengimplementasikan login, logout, profile edit, dan dashboard internal
+- Menonaktifkan registrasi publik, password reset publik, confirm password, dan email verification route pada baseline awal
+- Menjaga stack frontend tetap pada `Tailwind CSS v4` setelah scaffolding auth
 
 ### 2026-04-01
 
@@ -1797,7 +1805,7 @@ Status aktual per `2026-04-02`:
 - Database connection lokal MySQL: tervalidasi
 - Baseline frontend stack: terpasang
 - Build frontend awal: berhasil
-- Auth system: belum ada
+- Auth system: auth session dasar sudah ada
 - CRUD artikel: belum ada
 - Admin panel: belum ada
 - Frontend publik kustom: belum ada
