@@ -15,6 +15,7 @@
 - Menambahkan upload featured image artikel dengan resize, konversi WebP, preview admin, dan pembersihan file lama
 - Menambahkan fallback route media publik untuk kompatibilitas shared hosting tanpa ketergantungan penuh pada `storage:link`
 - Menambahkan sistem tag artikel dasar dengan sinkronisasi many-to-many dan input comma-separated di admin
+- Menambahkan frontend publik dasar untuk homepage, detail artikel, kategori, dan pencarian dengan pagination 15 item
 
 # Release Notes
 

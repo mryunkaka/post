@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Route;
 
 class Category extends Model
 {
@@ -31,6 +33,8 @@ class Category extends Model
     protected function casts(): array
     {
         return [
+            'parent_id' => 'integer',
+            'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -48,5 +52,19 @@ class Category extends Model
     public function articles(): HasMany
     {
         return $this->hasMany(Article::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function publicUrl(): ?string
+    {
+        if ($this->slug === '' || $this->slug === null || ! Route::has('categories.show')) {
+            return null;
+        }
+
+        return route('categories.show', $this->slug);
     }
 }

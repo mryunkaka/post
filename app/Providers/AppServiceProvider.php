@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
+use App\Services\SettingService;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('frontend.*', function ($view): void {
+            static $sharedData = null;
+
+            if ($sharedData === null) {
+                $settingService = app(SettingService::class);
+
+                $sharedData = [
+                    'siteName' => $settingService->get('site_name', config('app.name')),
+                    'siteDescription' => $settingService->get('site_description', ''),
+                    'siteTagline' => $settingService->get('site_tagline', ''),
+                    'frontCategories' => Category::query()
+                        ->active()
+                        ->orderBy('sort_order')
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'slug']),
+                ];
+            }
+
+            $view->with($sharedData);
+        });
     }
 }

@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\Front\ArticleController as FrontArticleController;
+use App\Http\Controllers\Front\CategoryController as FrontCategoryController;
+use App\Http\Controllers\Front\HomeController as FrontHomeController;
+use App\Http\Controllers\Front\SearchController as FrontSearchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMediaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : view('welcome');
-})->name('home');
+Route::get('/', FrontHomeController::class)->name('home');
+Route::get('/berita/{articleSlug}', [FrontArticleController::class, 'show'])->name('articles.show');
+Route::get('/kategori/{categorySlug}', [FrontCategoryController::class, 'show'])->name('categories.show');
+Route::get('/cari', FrontSearchController::class)->name('search.index');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

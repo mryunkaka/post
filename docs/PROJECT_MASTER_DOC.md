@@ -1541,6 +1541,11 @@ Format wajib:
   - File terkait: `app/Models/Tag.php`, `app/Models/Article.php`, `app/Services/TagService.php`, `database/migrations`, `app/Http/Requests/Admin/StoreArticleRequest.php`, `resources/views/admin/articles`, `tests/Feature/AdminArticleWorkflowTest.php`
   - Catatan: Input tag artikel kini memakai format comma-separated, relasi many-to-many `articles` ke `tags` aktif, pivot memakai `withTimestamps()`, dan sinkronisasi tag ditangani `TagService`
 
+- [x] Implement frontend publik dasar
+  - Status: `DONE`
+  - File terkait: `app/Http/Controllers/Front`, `resources/views/frontend`, `routes/web.php`, `app/Providers/AppServiceProvider.php`, `app/Models/Article.php`, `app/Models/Category.php`
+  - Catatan: Homepage publik, detail artikel, halaman kategori, dan pencarian dasar sudah aktif dengan query hanya untuk artikel `published`, non-archive, dan URL SEO-friendly
+
 - [ ] Implement rate limiting untuk publik, auth, dan API
   - Status: `TODO`
   - File terkait: `bootstrap/app.php`, `routes`, `app/Providers`
@@ -1556,10 +1561,10 @@ Format wajib:
   - File terkait: `app/Jobs`, `app/Services`, `routes/console.php`, `app/Models/Article.php`
   - Catatan: Buffer hit di cache, flush periodik ke `articles.views_count`, tidak synchronous di request cycle
 
-- [ ] Implement pagination strategy frontend
-  - Status: `TODO`
+- [x] Implement pagination strategy frontend
+  - Status: `DONE`
   - File terkait: `app/Http/Controllers/Front`, `resources/views/frontend`
-  - Catatan: Gunakan `paginate()` dengan default 15 item untuk kategori dan pencarian
+  - Catatan: Halaman kategori dan pencarian frontend kini memakai `paginate()` dengan default 15 item per halaman
 
 - [ ] Implement cache strategy untuk kategori, settings, homepage, dan artikel populer
   - Status: `TODO`
@@ -1946,8 +1951,9 @@ Status aktual per `2026-04-02`:
 - Rich text editor artikel admin dasar: sudah ada
 - Featured image artikel admin dasar: sudah ada
 - Sistem tag artikel dasar: sudah ada
-- Frontend publik kustom: belum ada
+- Frontend publik dasar: sudah ada
+- Pagination frontend kategori dan pencarian: sudah ada
 
 Kesimpulan:
 
-Proyek saat ini berada pada fase `foundation bootstrap`, yaitu dokumen sudah matang dan baseline aplikasi Laravel sudah berjalan, tetapi fitur inti proyek belum diimplementasikan.
+Proyek saat ini berada pada fase `foundation + public baseline`, yaitu fondasi admin internal sudah berjalan dan frontend publik minimum sudah aktif, tetapi fitur operasional lanjutan seperti rate limiting, cache, scheduler, dan komentar masih belum selesai.

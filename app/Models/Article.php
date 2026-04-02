@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -64,6 +65,24 @@ class Article extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'article_tags')->withTimestamps();
+    }
+
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query
+            ->where('status', 'published')
+            ->whereNull('archived_at')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
+
+    public function publicUrl(): ?string
+    {
+        if ($this->slug === '' || $this->slug === null || ! Route::has('articles.show')) {
+            return null;
+        }
+
+        return route('articles.show', $this->slug);
     }
 
     public function featuredImageUrl(): ?string
