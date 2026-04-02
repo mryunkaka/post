@@ -1808,21 +1808,28 @@ Tujuan:
   - log file: `/home/hark8423/git-deploy-post.log`
 - Script deploy cron wajib dijalankan melalui CLI PHP, bukan diakses publik via browser
 - Contoh cron:
-
+  
 ```bash
 /usr/bin/php /home/hark8423/public_html/deploy-cron-post.php
 ```
 
 - Jika file dipindahkan ke luar repo atau ke `/home/hark8423/public_html/deploy-cron-post.php`, isi script harus tetap mengarah ke path repo sebenarnya
-- Auto deploy Git harus menjaga file runtime dan file manual berikut agar tidak terhapus saat `git clean`:
+- Versi baseline deploy cron memakai pendekatan sederhana:
+  - `git rev-parse HEAD`
+  - `git pull origin main`
+  - `git rev-parse HEAD`
+  - log perubahan commit ke file log
+- Script baseline tidak memakai `git reset --hard` atau `git clean`
+- Pendekatan ini dipilih agar aman untuk shared hosting dan tidak menghapus file runtime manual
+- File runtime berikut tetap harus dipertahankan di server:
   - `.env`
   - `storage/`
   - `vendor/`
   - `public/storage`
-- `vendor/` tetap diperlakukan sebagai upload manual pada shared hosting ini dan tidak boleh dihapus oleh script deploy
+- `vendor/` tetap diperlakukan sebagai upload manual pada shared hosting ini
 - `public/build` tetap diperlakukan sebagai bagian dari deploy Git
-- Script deploy harus memakai lock file agar dua proses deploy tidak berjalan bersamaan
-- Script deploy boleh mencatat commit yang terdeploy ke log file agar mudah diaudit
+- Script deploy wajib mencatat status deploy ke log file agar cron mudah diverifikasi
+- Jika suatu saat repo sering mengalami konflik lokal, strategi deploy dapat dinaikkan ke mode `fetch + reset`, tetapi itu bukan baseline awal
 
 ## 25. Prinsip Utama Proyek
 
