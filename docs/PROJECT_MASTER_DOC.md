@@ -1465,6 +1465,11 @@ Format wajib:
   - File terkait: `routes/web.php`, `routes/auth.php`, `app/Http/Controllers/Auth`, `app/Http/Controllers/ProfileController.php`, `resources/views/auth`, `resources/views/layouts`, `resources/views/profile`, `resources/views/dashboard.blade.php`
   - Catatan: Baseline auth memakai Laravel Breeze Blade, login/logout/profile aktif, dan registrasi publik dinonaktifkan untuk menyesuaikan role internal proyek
 
+- [x] Implement role middleware untuk admin, editor, wartawan
+  - Status: `DONE`
+  - File terkait: `app/Http/Middleware/EnsureUserHasRole.php`, `bootstrap/app.php`, `routes/web.php`, `tests/Feature/RoleMiddlewareTest.php`
+  - Catatan: Middleware alias `role` sudah aktif, mendukung multi-role, dan baseline dashboard internal kini dilindungi kombinasi `auth` dan `role`
+
 ### 19.2 NEED VERIFICATION
 
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
@@ -1503,11 +1508,6 @@ Format wajib:
   - Catatan: Fase awal direkomendasikan memakai Trix atau editor ringan setara
 
 ### 19.3 TODO
-
-- [ ] Implement role middleware untuk admin, editor, wartawan
-  - Status: `TODO`
-  - File terkait: `app/Http/Middleware`, `bootstrap/app.php` atau struktur Laravel terkait
-  - Catatan: Harus konsisten dengan dokumen role system
 
 - [ ] Implement CRUD sederhana artikel
   - Status: `TODO`
@@ -1672,6 +1672,10 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - tidak lagi merekomendasikan `git add .`
   - AI executor hanya merekomendasikan nama commit kecuali user meminta commit eksplisit
 - Menambahkan referensi script auto deploy cron untuk shared hosting di `scripts/deploy-cron-post.php`
+- Mengimplementasikan middleware `role` untuk `admin`, `editor`, dan `wartawan`
+- Menambahkan alias middleware `role` di bootstrap Laravel 13 dan mengaktifkannya pada dashboard internal
+- Menambahkan `RoleMiddlewareTest` sebagai baseline verifikasi authorization berbasis role
+- Menyederhanakan script auto deploy cron agar cocok dengan shared hosting dan format log satu baris per commit
 
 ### 2026-04-01
 
@@ -1876,6 +1880,7 @@ Status aktual per `2026-04-02`:
 - Baseline frontend stack: terpasang
 - Build frontend awal: berhasil
 - Auth system: auth session dasar sudah ada
+- Role middleware: sudah ada
 - CRUD artikel: belum ada
 - Admin panel: belum ada
 - Frontend publik kustom: belum ada

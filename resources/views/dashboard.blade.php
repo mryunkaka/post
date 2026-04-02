@@ -17,7 +17,8 @@
                         <p class="mt-3 text-sm leading-7 text-stone-600">
                             Anda berhasil masuk ke baseline panel internal
                             {{ config('app.brand_name', config('app.name')) }}.
-                            Tahap berikutnya adalah middleware role, route admin terpisah, dan CRUD artikel.
+                            Middleware role internal sudah aktif.
+                            Tahap berikutnya adalah route admin terpisah dan CRUD artikel.
                         </p>
                     </div>
                 </div>
