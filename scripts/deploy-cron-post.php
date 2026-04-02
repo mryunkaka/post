@@ -5,6 +5,7 @@ declare(strict_types=1);
 $repo = '/home/hark8423/public_html/post';
 $branch = 'main';
 $remote = 'origin';
+$gitBinary = '/usr/bin/git';
 $log = '/home/hark8423/git-deploy-post.log';
 
 header('Content-Type: text/plain; charset=UTF-8');
@@ -21,19 +22,38 @@ if (! is_dir($repo) || ! is_dir($repo.'/.git')) {
     exit(1);
 }
 
+if (! is_file($gitBinary) || ! is_executable($gitBinary)) {
+    $message = "Deploy gagal: git binary tidak ditemukan di {$gitBinary}";
+    echo $message."\n";
+    $writeLog(date('Y-m-d H:i:s').' - '.$message);
+    exit(1);
+}
+
 chdir($repo);
+
+putenv('HOME=/home/hark8423');
+putenv('PATH=/usr/local/bin:/usr/bin:/bin');
+putenv('GIT_TERMINAL_PROMPT=0');
+putenv('LANG=en_US.UTF-8');
 
 $run = static function (string $command): string {
     return trim((string) shell_exec($command.' 2>&1'));
 };
 
 $date = date('Y-m-d H:i:s');
-$old = $run('git rev-parse HEAD');
-$output = $run(sprintf('git pull %s %s', escapeshellarg($remote), escapeshellarg($branch)));
-$new = $run('git rev-parse HEAD');
+$old = $run(sprintf('%s rev-parse HEAD', escapeshellcmd($gitBinary)));
+$output = $run(sprintf(
+    '%s -C %s pull %s %s',
+    escapeshellcmd($gitBinary),
+    escapeshellarg($repo),
+    escapeshellarg($remote),
+    escapeshellarg($branch)
+));
+$new = $run(sprintf('%s rev-parse HEAD', escapeshellcmd($gitBinary)));
 
 echo "Menjalankan deploy POST...\n\n";
 echo "Repo: {$repo}\n";
+echo "Git binary: {$gitBinary}\n";
 echo "Commit lama: {$old}\n";
 echo "Commit baru: {$new}\n\n";
 echo "Output git pull:\n{$output}\n\n";
@@ -58,4 +78,3 @@ if ($old !== $new && $old !== '' && $new !== '') {
 }
 
 echo "\nLog: {$log}\n";
-

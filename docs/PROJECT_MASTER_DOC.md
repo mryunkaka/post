@@ -1810,8 +1810,17 @@ Tujuan:
 - Contoh cron:
   
 ```bash
-/usr/bin/php /home/hark8423/public_html/deploy-cron-post.php
+/usr/bin/php /home/hark8423/public_html/deploy-cron-post.php >> /home/hark8423/git-deploy-post-cron.log 2>&1
 ```
+
+- Pada shared hosting, environment cron sering lebih minim daripada environment web:
+  - `PATH` bisa kosong atau berbeda
+  - `HOME` bisa tidak terdefinisi
+  - binary `git` bisa tidak ditemukan bila tidak memakai path absolut
+- Karena itu script deploy harus:
+  - memakai path absolut `git`, misalnya `/usr/bin/git`
+  - menetapkan `HOME` dan `PATH` secara eksplisit bila diperlukan
+  - menulis output ke log agar kegagalan cron mudah dilihat
 
 - Jika file dipindahkan ke luar repo atau ke `/home/hark8423/public_html/deploy-cron-post.php`, isi script harus tetap mengarah ke path repo sebenarnya
 - Versi baseline deploy cron memakai pendekatan sederhana:
