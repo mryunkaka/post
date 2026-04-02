@@ -39,6 +39,9 @@ class Article extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
+            'category_id' => 'integer',
+            'views_count' => 'integer',
             'is_featured' => 'boolean',
             'created_by_ai' => 'boolean',
             'published_at' => 'datetime',

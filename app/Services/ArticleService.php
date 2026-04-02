@@ -100,7 +100,7 @@ class ArticleService
             return;
         }
 
-        if ($article->user_id !== $actor->id) {
+        if (! $this->ownsArticle($actor, $article)) {
             throw new AuthorizationException('Anda tidak memiliki akses ke artikel ini.');
         }
     }
@@ -111,7 +111,7 @@ class ArticleService
             return;
         }
 
-        if ($article->user_id !== $actor->id) {
+        if (! $this->ownsArticle($actor, $article)) {
             throw new AuthorizationException('Anda hanya dapat mengubah artikel milik sendiri.');
         }
 
@@ -156,5 +156,10 @@ class ArticleService
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    protected function ownsArticle(User $actor, Article $article): bool
+    {
+        return (int) $article->user_id === (int) $actor->id;
     }
 }

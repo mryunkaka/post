@@ -1692,6 +1692,7 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - `admin` dapat menghapus artikel
   - `editor` dapat menghapus artikel berstatus `draft` dan `review`
   - `wartawan` tidak dapat menghapus artikel
+- Memperbaiki authorization artikel untuk shared hosting dengan normalisasi tipe `user_id` agar wartawan tetap dapat membuka artikel miliknya sendiri walau driver MySQL mengembalikan foreign key sebagai string
 
 ### 2026-04-01
 
