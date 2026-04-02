@@ -18,8 +18,14 @@
                             Anda berhasil masuk ke baseline panel internal
                             {{ config('app.brand_name', config('app.name')) }}.
                             Middleware role internal sudah aktif.
-                            Tahap berikutnya adalah route admin terpisah dan CRUD artikel.
+                            Route admin artikel dasar sekarang sudah aktif untuk draft, review, dan publish.
                         </p>
+                        <div class="mt-6">
+                            <a href="{{ route('admin.articles.index') }}"
+                                class="inline-flex items-center rounded-full bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-700">
+                                Buka Manajemen Artikel
+                            </a>
+                        </div>
                     </div>
                 </div>
 

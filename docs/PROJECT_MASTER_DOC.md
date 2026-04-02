@@ -14,6 +14,8 @@
   - Frontend baseline sudah terpasang dengan Vite, Tailwind CSS v4, Alpine.js, dan Trix
   - Database migration inti proyek sudah diimplementasikan
   - Seeder fase awal dan auth session baseline sudah diimplementasikan
+  - CRUD artikel internal dasar sudah diimplementasikan
+  - Slug service dan route admin artikel dasar sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1509,15 +1511,15 @@ Format wajib:
 
 ### 19.3 TODO
 
-- [ ] Implement CRUD sederhana artikel
-  - Status: `TODO`
-  - File terkait: `app/Models/Article.php`, `app/Http/Controllers`, `resources/views`, `database/migrations`
-  - Catatan: Fokus ke create, read, update, submit review, publish
+- [x] Implement CRUD sederhana artikel
+  - Status: `DONE`
+  - File terkait: `app/Models/Article.php`, `app/Models/Category.php`, `app/Http/Controllers/Admin/ArticleController.php`, `app/Http/Requests/Admin`, `app/Services/ArticleService.php`, `resources/views/admin/articles`, `routes/admin.php`, `tests/Feature/AdminArticleWorkflowTest.php`
+  - Catatan: Create, read, update, submit review, publish, pembatasan akses per role, dan route admin artikel dasar sudah aktif
 
-- [ ] Buat slug service dan rule unique slug
-  - Status: `TODO`
-  - File terkait: `app/Services/SlugService.php`, `app/Models`, `database/migrations`
-  - Catatan: Harus mendukung auto generate dan duplicate handling
+- [x] Buat slug service dan rule unique slug
+  - Status: `DONE`
+  - File terkait: `app/Services/SlugService.php`, `app/Services/ArticleService.php`, `app/Models/Article.php`, `tests/Feature/AdminArticleWorkflowTest.php`
+  - Catatan: Sudah mendukung auto generate slug dari judul, fallback default slug, dan duplicate handling numerik
 
 - [ ] Siapkan admin panel minimal
   - Status: `TODO`
@@ -1676,6 +1678,16 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Menambahkan alias middleware `role` di bootstrap Laravel 13 dan mengaktifkannya pada dashboard internal
 - Menambahkan `RoleMiddlewareTest` sebagai baseline verifikasi authorization berbasis role
 - Menyederhanakan script auto deploy cron agar cocok dengan shared hosting dan format log satu baris per commit
+- Menambahkan `APP_BRAND_NAME` ke konfigurasi aplikasi sebagai sumber brand publik
+- Mengimplementasikan CRUD artikel internal dasar melalui:
+  - model `Article` dan `Category`
+  - `ArticleService` untuk create, update, submit review, dan publish
+  - `SlugService` untuk auto generate slug unik
+  - request validation artikel admin
+  - `routes/admin.php` dan controller admin artikel
+  - view Blade admin artikel untuk index, create, edit, dan show
+- Menambahkan smoke test fitur artikel di `tests/Feature/AdminArticleWorkflowTest.php`
+- Memperbarui dashboard internal dan navigasi agar terhubung ke manajemen artikel
 
 ### 2026-04-01
 
@@ -1881,8 +1893,9 @@ Status aktual per `2026-04-02`:
 - Build frontend awal: berhasil
 - Auth system: auth session dasar sudah ada
 - Role middleware: sudah ada
-- CRUD artikel: belum ada
-- Admin panel: belum ada
+- CRUD artikel: sudah ada untuk workflow internal dasar
+- Slug service: sudah ada
+- Admin panel: baru tersedia minimal untuk artikel
 - Frontend publik kustom: belum ada
 
 Kesimpulan:

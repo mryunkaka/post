@@ -1,3 +1,12 @@
+# Project Changelog
+
+## 2026-04-02
+
+- Menambahkan CRUD artikel internal dasar untuk flow `draft -> review -> published`
+- Menambahkan `SlugService` dan `ArticleService` sebagai service layer awal artikel
+- Menambahkan route admin artikel, request validation, model artikel/kategori, dan view Blade admin artikel
+- Menambahkan smoke test workflow artikel serta update dashboard dan navigasi internal
+
 # Release Notes
 
 ## [Unreleased](https://github.com/laravel/laravel/compare/v12.12.2...12.x)
