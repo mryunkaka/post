@@ -8,7 +8,8 @@
                 </h2>
             </div>
             <a href="{{ route('admin.categories.create') }}"
-                class="inline-flex items-center rounded-full bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-700">
+                class="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-semibold transition"
+                style="background-color: #1c1917; color: #ffffff; border: 1px solid #1c1917;">
                 Tambah Kategori
             </a>
         </div>
