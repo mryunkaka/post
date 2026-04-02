@@ -408,6 +408,8 @@ tests/
 docs/
 |-- PROJECT_MASTER_DOC.md
 |-- CHANGELOG.md
+|-- MANUAL_DATABASE_SCHEMA.sql
+|-- MANUAL_DATABASE_SEEDERS.sql
 |-- RECOVERY.md
 `-- DECISIONS/
 ```
@@ -778,6 +780,24 @@ Tujuan:
 - Unique view per session atau IP tidak diwajibkan di fase awal
 - Yang dicatat cukup total hit
 - Kolom `views_count` di database tetap menjadi nilai final yang di-sync dari buffer
+
+### 6.11 Manual SQL Synchronization Rule
+
+- File SQL manual wajib tersedia di folder `docs` untuk kebutuhan import phpMyAdmin:
+  - `docs/MANUAL_DATABASE_SCHEMA.sql`
+  - `docs/MANUAL_DATABASE_SEEDERS.sql`
+- Setiap ada tambah, update, atau edit pada:
+  - migration
+  - seeder
+  - model yang memengaruhi struktur tabel, index, enum, relasi, atau seed data default
+  maka file SQL manual di `docs` wajib diperbarui pada commit yang sama
+- Source of truth implementasi tetap:
+  - `database/migrations`
+  - `database/seeders`
+  - model terkait bila perubahan model memengaruhi SQL manual operasional
+- Tujuan file SQL manual:
+  - memudahkan import manual melalui phpMyAdmin pada shared hosting tanpa akses CLI penuh
+  - menyediakan snapshot SQL yang selalu sinkron dengan implementasi kode aktual
 
 ## 7. Route Structure
 
@@ -1427,6 +1447,11 @@ Format wajib:
   - File terkait: `database/seeders`
   - Catatan: Seeder user default, kategori default, dan setting default sudah berhasil dijalankan
 
+- [x] Buat SQL manual schema dan seed untuk phpMyAdmin
+  - Status: `DONE`
+  - File terkait: `docs/MANUAL_DATABASE_SCHEMA.sql`, `docs/MANUAL_DATABASE_SEEDERS.sql`
+  - Catatan: SQL manual dibuat dari migration dan seeder aktual agar deploy shared hosting tetap bisa dilakukan tanpa artisan migrate atau db:seed
+
 ### 19.2 NEED VERIFICATION
 
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
@@ -1623,6 +1648,8 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - kategori default
   - setting default
 - Menjalankan `php artisan migrate:fresh --seed` ke database MySQL `media`
+- Menambahkan `docs/MANUAL_DATABASE_SCHEMA.sql` dan `docs/MANUAL_DATABASE_SEEDERS.sql` sebagai referensi SQL manual untuk phpMyAdmin
+- Menetapkan aturan bahwa setiap perubahan migration, seeder, atau model yang memengaruhi database wajib ikut memperbarui SQL manual di folder `docs`
 - Menyesuaikan TODO agar selaras dengan keputusan teknis terbaru
 - Menginstall `spatie/laravel-image-optimizer` sebagai baseline optimasi ukuran file media
 - Menambahkan konfigurasi awal `config/image-optimizer.php` untuk JPEG, PNG, GIF, SVG, dan WebP
