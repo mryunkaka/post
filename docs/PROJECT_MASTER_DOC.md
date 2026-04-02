@@ -1668,6 +1668,9 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Menambahkan fallback konfigurasi PDO MySQL untuk shared hosting tertentu:
   - `DB_EMULATE_PREPARES=true`
   - `DB_STRINGIFY_FETCHES=false`
+- Mengubah protokol Git:
+  - tidak lagi merekomendasikan `git add .`
+  - AI executor hanya merekomendasikan nama commit kecuali user meminta commit eksplisit
 
 ### 2026-04-01
 
@@ -1685,14 +1688,27 @@ Aturan ini wajib dipatuhi oleh semua developer dan AI executor.
 3. Kerjakan 1 task
 4. Update docs
 5. Update changelog
-6. Jalankan commit Git tanpa push
+6. Siapkan rekomendasi nama commit Git yang sesuai perubahan
 
-Perintah standar:
+Aturan Git:
 
 ```bash
-git add .
-git commit -m "feat: deskripsi perubahan"
+git add path/file-yang-berubah
+git commit -m "type: deskripsi perubahan"
 ```
+
+Ketentuan:
+
+- jangan gunakan `git add .` sebagai default workflow
+- staging harus spesifik ke file yang benar-benar berubah
+- AI executor tidak menjalankan `git add` atau `git commit` otomatis kecuali ada instruksi eksplisit dari user
+- AI executor wajib merekomendasikan nama commit yang relevan setiap perubahan signifikan selesai
+- format commit yang direkomendasikan:
+  - `docs: ...` untuk perubahan dokumentasi
+  - `feat: ...` untuk fitur baru
+  - `fix: ...` untuk perbaikan bug
+  - `refactor: ...` untuk refactor internal
+  - `chore: ...` untuk maintenance, tooling, atau debug helper
 
 Larangan:
 
@@ -1718,7 +1734,7 @@ AI baru yang melanjutkan proyek wajib:
 3. Memilih satu task TODO
 4. Mengimplementasikan task
 5. Memperbarui docs dan changelog
-6. Commit tanpa push
+6. Memberikan rekomendasi nama commit yang sesuai
 
 ### 21.4 Aturan Keamanan Sistem
 
@@ -1738,8 +1754,9 @@ Workflow operasional harian:
 4. Verifikasi hasil
 5. Update docs
 6. Update changelog
-7. Commit
-8. Jangan push
+7. Siapkan nama commit yang direkomendasikan
+8. Jalankan commit manual bila diperlukan
+9. Jangan push
 
 ## 23. Step Awal Implementasi
 
