@@ -736,8 +736,12 @@ Tujuan:
 - Nama asli file upload tidak boleh dipakai sebagai nama file final
 - Resize image direkomendasikan memakai library image processing yang kompatibel dengan Laravel service layer
 - Keputusan awal:
-  - gunakan `intervention/image` atau library setara
+  - gunakan `intervention/image-laravel` untuk resize dan normalisasi dimensi
+  - gunakan `spatie/laravel-image-optimizer` untuk optimasi ukuran file setelah resize
   - driver image bergantung dukungan `GD` atau `Imagick`
+- Optimasi ukuran file bergantung pada binary optimizer yang tersedia di server seperti `jpegoptim`, `pngquant`, `optipng`, `gifsicle`, `svgo`, dan `cwebp`
+- Pada shared hosting, paket Spatie tetap dapat dipasang lebih awal tetapi hasil optimasi maksimal baru tercapai bila binary tersebut tersedia atau dapat diarahkan melalui konfigurasi `binary_path`
+- Target operasional adalah gambar tetap terlihat jelas dengan ukuran file sekecil mungkin; hasil seperti `1600x1200 -> 200KB` adalah target optimasi yang mungkin tercapai pada banyak gambar, tetapi bukan jaminan absolut untuk semua sumber file
 - Dukungan ekstensi PHP untuk image processing wajib diverifikasi di hosting target
 - Seluruh proses upload dan resize ditangani melalui `MediaService`
 
@@ -1403,6 +1407,11 @@ Format wajib:
   - File terkait: `composer.json`, `composer.lock`
   - Catatan: `intervention/image-laravel` sudah terpasang sebagai baseline media processing
 
+- [x] Install library image optimization awal
+  - Status: `DONE`
+  - File terkait: `composer.json`, `composer.lock`, `config/image-optimizer.php`
+  - Catatan: `spatie/laravel-image-optimizer` sudah terpasang untuk optimasi ukuran file pasca-resize dengan catatan efektivitas akhir bergantung pada binary optimizer di server
+
 - [x] Setup `.env` awal dan database connection
   - Status: `DONE`
   - File terkait: `.env`
@@ -1615,6 +1624,8 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - setting default
 - Menjalankan `php artisan migrate:fresh --seed` ke database MySQL `media`
 - Menyesuaikan TODO agar selaras dengan keputusan teknis terbaru
+- Menginstall `spatie/laravel-image-optimizer` sebagai baseline optimasi ukuran file media
+- Menambahkan konfigurasi awal `config/image-optimizer.php` untuk JPEG, PNG, GIF, SVG, dan WebP
 
 ### 2026-04-01
 
