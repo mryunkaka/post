@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Dashboard Redaksi
+            Dashboard Redaksi2
         </h2>
     </x-slot>
 
@@ -15,7 +15,8 @@
                             Selamat datang, {{ auth()->user()->name }}
                         </h3>
                         <p class="mt-3 text-sm leading-7 text-stone-600">
-                            Anda berhasil masuk ke baseline panel internal {{ config('app.brand_name', config('app.name')) }}.
+                            Anda berhasil masuk ke baseline panel internal
+                            {{ config('app.brand_name', config('app.name')) }}.
                             Tahap berikutnya adalah middleware role, route admin terpisah, dan CRUD artikel.
                         </p>
                     </div>
@@ -35,7 +36,8 @@
                             </div>
                             <div>
                                 <dt class="text-stone-400">Role</dt>
-                                <dd class="mt-1 inline-flex rounded-full bg-amber-400/15 px-3 py-1 font-semibold uppercase tracking-wide text-amber-300">
+                                <dd
+                                    class="mt-1 inline-flex rounded-full bg-amber-400/15 px-3 py-1 font-semibold uppercase tracking-wide text-amber-300">
                                     {{ auth()->user()->role }}
                                 </dd>
                             </div>
