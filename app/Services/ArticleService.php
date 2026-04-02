@@ -14,6 +14,7 @@ class ArticleService
         protected SlugService $slugService,
         protected MediaService $mediaService,
         protected TagService $tagService,
+        protected FrontCacheService $frontCacheService,
     ) {}
 
     /**
@@ -29,6 +30,7 @@ class ArticleService
         $article->published_at = null;
         $article->save();
         $this->tagService->syncArticleTags($article, Arr::get($data, 'tags'));
+        $this->frontCacheService->flushArticleRelatedCaches();
 
         return $article->load(['author', 'category', 'tags']);
     }
@@ -43,6 +45,7 @@ class ArticleService
         $article->fill($this->preparePayload($data, $article));
         $article->save();
         $this->tagService->syncArticleTags($article, Arr::get($data, 'tags'));
+        $this->frontCacheService->flushArticleRelatedCaches();
 
         return $article->load(['author', 'category', 'tags']);
     }
@@ -60,6 +63,7 @@ class ArticleService
             'review_notes' => null,
             'published_at' => null,
         ])->save();
+        $this->frontCacheService->flushArticleRelatedCaches();
 
         return $article->refresh();
     }
@@ -78,6 +82,7 @@ class ArticleService
             'status' => 'published',
             'published_at' => now(),
         ])->save();
+        $this->frontCacheService->flushArticleRelatedCaches();
 
         return $article->refresh();
     }
@@ -87,6 +92,7 @@ class ArticleService
         if ($actor->role === 'admin') {
             $this->mediaService->deletePublicFile($article->featured_image);
             $article->delete();
+            $this->frontCacheService->flushArticleRelatedCaches();
 
             return;
         }
@@ -94,6 +100,7 @@ class ArticleService
         if ($actor->role === 'editor' && in_array($article->status, ['draft', 'review'], true)) {
             $this->mediaService->deletePublicFile($article->featured_image);
             $article->delete();
+            $this->frontCacheService->flushArticleRelatedCaches();
 
             return;
         }

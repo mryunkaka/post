@@ -4,15 +4,18 @@ namespace App\Services;
 
 use App\Models\Setting;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class SettingService
 {
+    public function __construct(
+        protected FrontCacheService $frontCacheService,
+    ) {}
+
     public function getGroup(string $group): Collection
     {
-        return Setting::query()
+        return $this->autoloaded()
             ->where('group', $group)
-            ->orderBy('key')
-            ->get()
             ->keyBy('key');
     }
 
@@ -31,13 +34,51 @@ class SettingService
                 ]
             );
         }
+
+        $this->frontCacheService->flushSettingRelatedCaches();
     }
 
     public function get(string $key, mixed $default = null): mixed
     {
-        $setting = Setting::query()->where('key', $key)->first();
+        $setting = $this->autoloaded()->firstWhere('key', $key);
 
         return $setting?->value ?? $default;
+    }
+
+    protected function autoloaded(): Collection
+    {
+        $cacheKey = $this->frontCacheService->key('settings.autoload');
+        $cached = Cache::get($cacheKey);
+
+        if (is_array($cached)) {
+            return collect($cached)->map(
+                fn (array $row) => (new Setting)->forceFill($row)
+            );
+        }
+
+        if ($cached !== null) {
+            Cache::forget($cacheKey);
+        }
+
+        $payload = Setting::query()
+            ->where('autoload', true)
+            ->orderBy('group')
+            ->orderBy('key')
+            ->get(['group', 'key', 'value', 'autoload'])
+            ->map(fn (Setting $setting) => [
+                'group' => $setting->group,
+                'key' => $setting->key,
+                'value' => $setting->value,
+                'autoload' => (bool) $setting->autoload,
+            ])
+            ->values()
+            ->all();
+
+        Cache::put($cacheKey, $payload, FrontCacheService::SETTINGS_AUTOLOAD_TTL);
+
+        return collect($payload)->map(
+            fn (array $row) => (new Setting)->forceFill($row)
+        );
     }
 
     protected function normalizeValue(mixed $value): ?string

@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
+use App\Services\FrontCacheService;
 
 class CategoryController extends Controller
 {
+    public function __construct(
+        protected FrontCacheService $frontCacheService,
+    ) {}
+
     public function show(string $categorySlug)
     {
         $category = Category::query()
@@ -23,14 +28,11 @@ class CategoryController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $popularArticles = Article::query()
-            ->publiclyVisible()
-            ->with(['category:id,name,slug'])
-            ->where('category_id', $category->id)
-            ->orderByDesc('views_count')
-            ->orderByDesc('published_at')
+        $popularArticles = $this->frontCacheService
+            ->rememberPopularArticles()
+            ->filter(fn ($article) => $article->category_id === $category->id)
             ->take(5)
-            ->get();
+            ->values();
 
         return view('frontend.categories.show', [
             'category' => $category,

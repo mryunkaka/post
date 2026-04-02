@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Category;
+use App\Services\FrontCacheService;
 use App\Services\SettingService;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -32,11 +32,7 @@ class AppServiceProvider extends ServiceProvider
                     'siteName' => $settingService->get('site_name', config('app.name')),
                     'siteDescription' => $settingService->get('site_description', ''),
                     'siteTagline' => $settingService->get('site_tagline', ''),
-                    'frontCategories' => Category::query()
-                        ->active()
-                        ->orderBy('sort_order')
-                        ->orderBy('name')
-                        ->get(['id', 'name', 'slug']),
+                    'frontCategories' => app(FrontCacheService::class)->rememberActiveCategories(),
                 ];
             }
 

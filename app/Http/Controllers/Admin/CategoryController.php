@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Services\FrontCacheService;
 use App\Services\SlugService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
@@ -16,6 +17,7 @@ class CategoryController extends Controller
 {
     public function __construct(
         protected SlugService $slugService,
+        protected FrontCacheService $frontCacheService,
     ) {}
 
     public function index(): View
@@ -46,6 +48,7 @@ class CategoryController extends Controller
         $category = new Category;
         $category->fill($this->payload($request->validated(), $category));
         $category->save();
+        $this->frontCacheService->flushCategoryRelatedCaches();
 
         return redirect()
             ->route('admin.categories.edit', $category)
@@ -64,6 +67,7 @@ class CategoryController extends Controller
     {
         $category->fill($this->payload($request->validated(), $category));
         $category->save();
+        $this->frontCacheService->flushCategoryRelatedCaches();
 
         return redirect()
             ->route('admin.categories.edit', $category)
@@ -74,6 +78,7 @@ class CategoryController extends Controller
     {
         try {
             $category->delete();
+            $this->frontCacheService->flushCategoryRelatedCaches();
         } catch (QueryException) {
             return redirect()
                 ->route('admin.categories.index')

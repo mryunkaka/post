@@ -4,9 +4,16 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Services\ArticleViewBufferService;
+use App\Services\FrontCacheService;
 
 class ArticleController extends Controller
 {
+    public function __construct(
+        protected FrontCacheService $frontCacheService,
+        protected ArticleViewBufferService $articleViewBufferService,
+    ) {}
+
     public function show(string $articleSlug)
     {
         $article = Article::query()
@@ -14,6 +21,8 @@ class ArticleController extends Controller
             ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug'])
             ->where('slug', $articleSlug)
             ->firstOrFail();
+
+        $this->articleViewBufferService->record($article);
 
         $relatedArticles = Article::query()
             ->publiclyVisible()
@@ -24,14 +33,11 @@ class ArticleController extends Controller
             ->take(4)
             ->get();
 
-        $popularArticles = Article::query()
-            ->publiclyVisible()
-            ->with(['category:id,name,slug'])
-            ->whereKeyNot($article->id)
-            ->orderByDesc('views_count')
-            ->orderByDesc('published_at')
+        $popularArticles = $this->frontCacheService
+            ->rememberPopularArticles()
+            ->reject(fn ($popularArticle) => $popularArticle->id === $article->id)
             ->take(5)
-            ->get();
+            ->values();
 
         return view('frontend.articles.show', [
             'article' => $article,

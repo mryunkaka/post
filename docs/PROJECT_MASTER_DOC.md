@@ -1556,20 +1556,20 @@ Format wajib:
   - File terkait: `app/Console`, `routes/console.php`, `docs/RECOVERY.md`
   - Catatan: Backup DB harian, retensi 7 hari, backup media terpisah, dan prosedur restore wajib terdokumentasi
 
-- [ ] Implement views counter buffering
-  - Status: `TODO`
+- [x] Implement views counter buffering
+  - Status: `DONE`
   - File terkait: `app/Jobs`, `app/Services`, `routes/console.php`, `app/Models/Article.php`
-  - Catatan: Buffer hit di cache, flush periodik ke `articles.views_count`, tidak synchronous di request cycle
+  - Catatan: View publik artikel kini dibuffer ke cache, tidak menulis counter secara synchronous di request, dan flush ke database tersedia via command terjadwal setiap 10 menit
 
 - [x] Implement pagination strategy frontend
   - Status: `DONE`
   - File terkait: `app/Http/Controllers/Front`, `resources/views/frontend`
   - Catatan: Halaman kategori dan pencarian frontend kini memakai `paginate()` dengan default 15 item per halaman
 
-- [ ] Implement cache strategy untuk kategori, settings, homepage, dan artikel populer
-  - Status: `TODO`
+- [x] Implement cache strategy untuk kategori, settings, homepage, dan artikel populer
+  - Status: `DONE`
   - File terkait: `app/Services`, `config/cache.php`, `app/Http/Controllers`
-  - Catatan: Gunakan prefix key konsisten dan explicit invalidation setelah mutasi data
+  - Catatan: Kategori aktif, settings autoload, payload homepage, dan artikel populer kini memakai cache key konsisten dengan invalidation eksplisit saat mutasi data terkait
 
 - [ ] Implement mail system asynchronous
   - Status: `TODO`
@@ -1953,7 +1953,9 @@ Status aktual per `2026-04-02`:
 - Sistem tag artikel dasar: sudah ada
 - Frontend publik dasar: sudah ada
 - Pagination frontend kategori dan pencarian: sudah ada
+- Cache frontend dasar: sudah ada
+- Views counter buffering dasar: sudah ada
 
 Kesimpulan:
 
-Proyek saat ini berada pada fase `foundation + public baseline`, yaitu fondasi admin internal sudah berjalan dan frontend publik minimum sudah aktif, tetapi fitur operasional lanjutan seperti rate limiting, cache, scheduler, dan komentar masih belum selesai.
+Proyek saat ini berada pada fase `foundation + public baseline`, yaitu fondasi admin internal dan frontend publik minimum sudah aktif, sementara fitur operasional lanjutan seperti rate limiting, backup, mail async, scheduled publishing, archive behavior, dan komentar masih belum selesai.
