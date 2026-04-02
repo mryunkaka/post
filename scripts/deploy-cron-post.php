@@ -58,11 +58,14 @@ echo "Commit lama: {$old}\n";
 echo "Commit baru: {$new}\n\n";
 echo "Output git pull:\n{$output}\n\n";
 
-$writeLog("{$date} - START deploy {$old}");
-$writeLog("{$date} - git pull output: {$output}");
-
 if ($old !== $new && $old !== '' && $new !== '') {
-    $commits = $run("git log {$old}..{$new} --pretty=format:'%h | %an | %s'");
+    $commits = $run(sprintf(
+        '%s -C %s log %s..%s --pretty=format:"%%h | %%an | %%s"',
+        escapeshellcmd($gitBinary),
+        escapeshellarg($repo),
+        escapeshellarg($old),
+        escapeshellarg($new)
+    ));
 
     foreach (explode("\n", trim($commits)) as $commit) {
         if ($commit !== '') {
@@ -71,10 +74,8 @@ if ($old !== $new && $old !== '' && $new !== '') {
     }
 
     echo "Status: Deploy berhasil (ada perubahan)\n";
-    $writeLog("{$date} - Status: Deploy berhasil (ada perubahan)");
 } else {
     echo "Status: Tidak ada perubahan\n";
-    $writeLog("{$date} - Status: Tidak ada perubahan");
 }
 
 echo "\nLog: {$log}\n";

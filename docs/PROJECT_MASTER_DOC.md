@@ -1827,7 +1827,7 @@ Tujuan:
   - `git rev-parse HEAD`
   - `git pull origin main`
   - `git rev-parse HEAD`
-  - log perubahan commit ke file log
+  - log perubahan commit ke file log hanya jika ada perubahan
 - Script baseline tidak memakai `git reset --hard` atau `git clean`
 - Pendekatan ini dipilih agar aman untuk shared hosting dan tidak menghapus file runtime manual
 - File runtime berikut tetap harus dipertahankan di server:
@@ -1837,7 +1837,9 @@ Tujuan:
   - `public/storage`
 - `vendor/` tetap diperlakukan sebagai upload manual pada shared hosting ini
 - `public/build` tetap diperlakukan sebagai bagian dari deploy Git
-- Script deploy wajib mencatat status deploy ke log file agar cron mudah diverifikasi
+- Script deploy wajib mencatat commit yang terdeploy ke log file hanya saat ada perubahan
+- Format log deploy harus sederhana dan satu baris per commit, misalnya:
+  - `2026-04-01 11:09:05 - Deploy beee4d6 | Sayid Adam | Perbaikan Icon dan Menu Sekertaris`
 - Jika suatu saat repo sering mengalami konflik lokal, strategi deploy dapat dinaikkan ke mode `fetch + reset`, tetapi itu bukan baseline awal
 
 ## 25. Prinsip Utama Proyek
