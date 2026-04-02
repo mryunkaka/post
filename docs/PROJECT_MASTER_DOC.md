@@ -1403,6 +1403,21 @@ Format wajib:
   - File terkait: `composer.json`, `composer.lock`
   - Catatan: `intervention/image-laravel` sudah terpasang sebagai baseline media processing
 
+- [x] Setup `.env` awal dan database connection
+  - Status: `DONE`
+  - File terkait: `.env`
+  - Catatan: Koneksi MySQL lokal ke database `media` sudah tervalidasi lewat proses migration dan seeding
+
+- [x] Buat migration untuk tabel inti
+  - Status: `DONE`
+  - File terkait: `database/migrations`
+  - Catatan: Tabel inti proyek dan tabel pendukung Laravel database driver sudah berhasil dimigrasikan
+
+- [x] Buat seeder fase awal
+  - Status: `DONE`
+  - File terkait: `database/seeders`
+  - Catatan: Seeder user default, kategori default, dan setting default sudah berhasil dijalankan
+
 ### 19.2 NEED VERIFICATION
 
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
@@ -1442,11 +1457,6 @@ Format wajib:
 
 ### 19.3 TODO
 
-- [ ] Setup `.env` awal dan database connection
-  - Status: `TODO`
-  - File terkait: `.env`
-  - Catatan: `APP_NAME`, `APP_BRAND_NAME`, dan `APP_KEY` sudah ada; sisa setup DB, cache, queue, dan mail belum final
-
 - [ ] Implement auth dasar berbasis session
   - Status: `TODO`
   - File terkait: `routes`, `app/Http/Controllers`, `resources/views`
@@ -1461,16 +1471,6 @@ Format wajib:
   - Status: `TODO`
   - File terkait: `app/Models/Article.php`, `app/Http/Controllers`, `resources/views`, `database/migrations`
   - Catatan: Fokus ke create, read, update, submit review, publish
-
-- [ ] Buat migration untuk tabel inti
-  - Status: `TODO`
-  - File terkait: `database/migrations`
-  - Catatan: `users`, `categories`, `articles`, `tags`, `article_tags`, `comments`, `ads`, `settings`, `subscribers`
-
-- [ ] Buat seeder fase awal
-  - Status: `TODO`
-  - File terkait: `database/seeders`
-  - Catatan: Harus mencakup admin default, editor default, wartawan sample, kategori default, dan setting default
 
 - [ ] Buat slug service dan rule unique slug
   - Status: `TODO`
@@ -1597,6 +1597,23 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Mengaktifkan bootstrap Alpine.js di `resources/js/app.js`
 - Menghasilkan build frontend awal di `public/build`
 - Menghasilkan `APP_KEY` dan menetapkan `APP_NAME` serta `APP_BRAND_NAME` di `.env`
+- Mengimplementasikan migration inti proyek:
+  - `users`
+  - `categories`
+  - `articles`
+  - `tags`
+  - `article_tags`
+  - `comments`
+  - `ads`
+  - `settings`
+  - `subscribers`
+- Mengimplementasikan seeder fase awal:
+  - admin default
+  - editor default
+  - wartawan sample
+  - kategori default
+  - setting default
+- Menjalankan `php artisan migrate:fresh --seed` ke database MySQL `media`
 - Menyesuaikan TODO agar selaras dengan keputusan teknis terbaru
 
 ### 2026-04-01
@@ -1737,7 +1754,9 @@ Status aktual per `2026-04-02`:
 - Dokumen master: ada dan telah direvisi
 - Laravel app: ada
 - Git repository: aktif
-- Database schema inti proyek: masih tahap desain dokumen
+- Database schema inti proyek: sudah diimplementasikan pada baseline awal
+- Seeder fase awal: sudah diimplementasikan dan dijalankan
+- Database connection lokal MySQL: tervalidasi
 - Baseline frontend stack: terpasang
 - Build frontend awal: berhasil
 - Auth system: belum ada
