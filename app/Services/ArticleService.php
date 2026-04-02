@@ -13,6 +13,7 @@ class ArticleService
     public function __construct(
         protected SlugService $slugService,
         protected MediaService $mediaService,
+        protected TagService $tagService,
     ) {}
 
     /**
@@ -27,8 +28,9 @@ class ArticleService
         $article->status = 'draft';
         $article->published_at = null;
         $article->save();
+        $this->tagService->syncArticleTags($article, Arr::get($data, 'tags'));
 
-        return $article->load(['author', 'category']);
+        return $article->load(['author', 'category', 'tags']);
     }
 
     /**
@@ -40,8 +42,9 @@ class ArticleService
 
         $article->fill($this->preparePayload($data, $article));
         $article->save();
+        $this->tagService->syncArticleTags($article, Arr::get($data, 'tags'));
 
-        return $article->load(['author', 'category']);
+        return $article->load(['author', 'category', 'tags']);
     }
 
     public function submitForReview(User $actor, Article $article): Article

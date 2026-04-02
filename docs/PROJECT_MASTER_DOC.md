@@ -20,6 +20,7 @@
   - Setting situs admin dasar dan feature flag awal sudah diimplementasikan
   - Rich text editor admin dasar untuk artikel sudah diimplementasikan
   - Upload featured image artikel dasar sudah diimplementasikan
+  - Sistem tag artikel dasar sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1535,10 +1536,10 @@ Format wajib:
   - File terkait: `config/filesystems.php`, `app/Services/MediaService.php`, `app/Http/Requests/Admin/StoreArticleRequest.php`, `app/Services/ArticleService.php`, `resources/views/admin/articles`, `storage/app/public`, `tests/Unit/MediaServiceTest.php`
   - Catatan: Featured image artikel kini mendukung upload, resize maksimal 1200px, konversi WebP, validasi format, batas ukuran 2MB, hash filename berbasis ULID, preview admin, dan replace/delete file lama
 
-- [ ] Implement tags system
-  - Status: `TODO`
-  - File terkait: `app/Models/Tag.php`, `app/Models/Article.php`, `app/Services/TagService.php`, `database/migrations`, `app/Http/Controllers`
-  - Catatan: Tambahkan relasi many-to-many `articles` ke `tags`, tabel pivot `article_tags`, dan `withTimestamps()`
+- [x] Implement tags system
+  - Status: `DONE`
+  - File terkait: `app/Models/Tag.php`, `app/Models/Article.php`, `app/Services/TagService.php`, `database/migrations`, `app/Http/Requests/Admin/StoreArticleRequest.php`, `resources/views/admin/articles`, `tests/Feature/AdminArticleWorkflowTest.php`
+  - Catatan: Input tag artikel kini memakai format comma-separated, relasi many-to-many `articles` ke `tags` aktif, pivot memakai `withTimestamps()`, dan sinkronisasi tag ditangani `TagService`
 
 - [ ] Implement rate limiting untuk publik, auth, dan API
   - Status: `TODO`
@@ -1727,6 +1728,11 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - preview featured image di ringkasan artikel
   - unit test penyimpanan media ke disk `public`
 - Menambahkan fallback route media publik agar preview featured image tetap berjalan pada environment yang belum memiliki symlink `public/storage` yang sehat
+- Mengimplementasikan sistem tag artikel dasar melalui:
+  - model `Tag` dan relasi many-to-many pada `Article`
+  - `TagService` untuk normalisasi tag, slug unik, dan sinkronisasi pivot
+  - input tag comma-separated di form artikel admin
+  - tampilan tag di list dan ringkasan artikel admin
 
 ### 2026-04-01
 
@@ -1939,6 +1945,7 @@ Status aktual per `2026-04-02`:
 - Feature flag system dasar: sudah ada
 - Rich text editor artikel admin dasar: sudah ada
 - Featured image artikel admin dasar: sudah ada
+- Sistem tag artikel dasar: sudah ada
 - Frontend publik kustom: belum ada
 
 Kesimpulan:

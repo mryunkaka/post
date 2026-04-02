@@ -44,6 +44,11 @@
                     <span class="inline-flex rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-700">
                         {{ $article->category->name }}
                     </span>
+                    @foreach ($article->tags as $tag)
+                        <span class="inline-flex rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-700">
+                            {{ $tag->name }}
+                        </span>
+                    @endforeach
                 </div>
 
                 <dl class="mt-6 grid gap-5 text-sm text-stone-600 sm:grid-cols-2">

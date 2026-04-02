@@ -24,7 +24,7 @@ class ArticleController extends Controller
         $user = $request->user();
 
         $articles = Article::query()
-            ->with(['author', 'category'])
+            ->with(['author', 'category', 'tags'])
             ->when($user->role === 'wartawan', fn ($query) => $query->where('user_id', $user->id))
             ->latest()
             ->paginate(12);
@@ -58,7 +58,7 @@ class ArticleController extends Controller
         $this->articleService->assertCanView($request->user(), $article);
 
         return view('admin.articles.show', [
-            'article' => $article->load(['author', 'category']),
+            'article' => $article->load(['author', 'category', 'tags']),
         ]);
     }
 
@@ -67,7 +67,7 @@ class ArticleController extends Controller
         $this->articleService->assertCanView($request->user(), $article);
 
         return view('admin.articles.edit', [
-            'article' => $article->load(['author', 'category']),
+            'article' => $article->load(['author', 'category', 'tags']),
             'categories' => $this->categories(),
         ]);
     }

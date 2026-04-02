@@ -27,6 +27,14 @@
                 </div>
 
                 <div>
+                    <x-input-label for="tags" value="Tags" />
+                    <x-text-input id="tags" name="tags" type="text" class="mt-2 block w-full"
+                        :value="old('tags', $article->tags->pluck('name')->implode(', '))" />
+                    <p class="mt-2 text-xs text-stone-500">Pisahkan tag dengan koma. Contoh: Ekonomi, Pelabuhan, Kotabaru</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('tags')" />
+                </div>
+
+                <div>
                     <x-input-label for="content" value="Konten" />
                     <input id="content" type="hidden" name="content" value="{{ old('content', $article->content) }}">
                     <div data-rich-editor data-input="content" class="mt-2 block w-full"></div>

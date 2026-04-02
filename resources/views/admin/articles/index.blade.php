@@ -42,6 +42,15 @@
                                     <td class="px-6 py-5">
                                         <p class="font-semibold text-stone-900">{{ $article->title }}</p>
                                         <p class="mt-2 text-xs uppercase tracking-[0.18em] text-stone-500">{{ $article->slug }}</p>
+                                        @if ($article->tags->isNotEmpty())
+                                            <div class="mt-3 flex flex-wrap gap-2">
+                                                @foreach ($article->tags as $tag)
+                                                    <span class="inline-flex rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone-700">
+                                                        {{ $tag->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-5 text-stone-700">{{ $article->category->name }}</td>
                                     <td class="px-6 py-5 text-stone-700">{{ $article->author->name }}</td>

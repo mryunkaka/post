@@ -24,6 +24,7 @@ class AdminArticleWorkflowTest extends TestCase
             'slug' => '',
             'category_id' => $category->id,
             'excerpt' => 'Ringkasan singkat berita.',
+            'tags' => 'Ekonomi, Pelabuhan, Kotabaru',
             'content' => 'Isi artikel lengkap untuk kebutuhan pengujian.',
             'meta_title' => 'Meta Judul',
             'meta_description' => 'Meta description',
@@ -36,6 +37,7 @@ class AdminArticleWorkflowTest extends TestCase
         $response->assertRedirect(route('admin.articles.edit', $article));
         $this->assertSame('judul-berita-penting', $article->slug);
         $this->assertSame('draft', $article->status);
+        $this->assertCount(3, $article->tags);
 
         $this->actingAs($user)
             ->patch(route('admin.articles.submit-review', $article))
@@ -116,5 +118,37 @@ class AdminArticleWorkflowTest extends TestCase
         $this->assertDatabaseHas('articles', [
             'id' => $article->id,
         ]);
+    }
+
+    public function test_updating_article_resyncs_tags(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $category = Category::factory()->create();
+        $article = Article::factory()->create([
+            'category_id' => $category->id,
+        ]);
+
+        $this->actingAs($editor)
+            ->patch(route('admin.articles.update', $article), [
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'category_id' => $category->id,
+                'excerpt' => $article->excerpt,
+                'tags' => 'Ekonomi, Logistik',
+                'content' => $article->content,
+                'meta_title' => $article->meta_title,
+                'meta_description' => $article->meta_description,
+                'schema_type' => $article->schema_type,
+                'is_featured' => false,
+                'remove_featured_image' => false,
+            ])
+            ->assertRedirect(route('admin.articles.edit', $article));
+
+        $this->assertSame(
+            ['Ekonomi', 'Logistik'],
+            $article->fresh()->tags->pluck('name')->sort()->values()->all()
+        );
     }
 }
