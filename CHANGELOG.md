@@ -3,6 +3,7 @@
 ## 2026-04-02
 
 - Menambahkan CRUD artikel internal dasar untuk flow `draft -> review -> published`
+- Melengkapi modul artikel dengan aksi `delete` berizin untuk `admin` dan `editor`
 - Menambahkan `SlugService` dan `ArticleService` sebagai service layer awal artikel
 - Menambahkan route admin artikel, request validation, model artikel/kategori, dan view Blade admin artikel
 - Menambahkan smoke test workflow artikel serta update dashboard dan navigasi internal

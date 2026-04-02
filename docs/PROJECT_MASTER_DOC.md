@@ -1514,7 +1514,7 @@ Format wajib:
 - [x] Implement CRUD sederhana artikel
   - Status: `DONE`
   - File terkait: `app/Models/Article.php`, `app/Models/Category.php`, `app/Http/Controllers/Admin/ArticleController.php`, `app/Http/Requests/Admin`, `app/Services/ArticleService.php`, `resources/views/admin/articles`, `routes/admin.php`, `tests/Feature/AdminArticleWorkflowTest.php`
-  - Catatan: Create, read, update, submit review, publish, pembatasan akses per role, dan route admin artikel dasar sudah aktif
+  - Catatan: Create, read, update, delete, submit review, publish, pembatasan akses per role, dan route admin artikel dasar sudah aktif
 
 - [x] Buat slug service dan rule unique slug
   - Status: `DONE`
@@ -1688,6 +1688,10 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - view Blade admin artikel untuk index, create, edit, dan show
 - Menambahkan smoke test fitur artikel di `tests/Feature/AdminArticleWorkflowTest.php`
 - Memperbarui dashboard internal dan navigasi agar terhubung ke manajemen artikel
+- Menambahkan aksi hapus artikel dengan rule:
+  - `admin` dapat menghapus artikel
+  - `editor` dapat menghapus artikel berstatus `draft` dan `review`
+  - `wartawan` tidak dapat menghapus artikel
 
 ### 2026-04-01
 

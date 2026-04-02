@@ -99,6 +99,15 @@ class ArticleController extends Controller
             ->with('status', 'Artikel berhasil dipublish.');
     }
 
+    public function destroy(Request $request, Article $article): RedirectResponse
+    {
+        $this->articleService->delete($request->user(), $article);
+
+        return redirect()
+            ->route('admin.articles.index')
+            ->with('status', 'Artikel berhasil dihapus.');
+    }
+
     /**
      * @return Collection<int, Category>
      */

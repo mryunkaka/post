@@ -80,4 +80,41 @@ class AdminArticleWorkflowTest extends TestCase
             ->get(route('admin.articles.edit', $article))
             ->assertForbidden();
     }
+
+    public function test_editor_can_delete_draft_article(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $article = Article::factory()->create([
+            'status' => 'draft',
+        ]);
+
+        $this->actingAs($editor)
+            ->delete(route('admin.articles.destroy', $article))
+            ->assertRedirect(route('admin.articles.index'));
+
+        $this->assertDatabaseMissing('articles', [
+            'id' => $article->id,
+        ]);
+    }
+
+    public function test_wartawan_cannot_delete_article(): void
+    {
+        $wartawan = User::factory()->create([
+            'role' => 'wartawan',
+        ]);
+        $article = Article::factory()->create([
+            'user_id' => $wartawan->id,
+            'status' => 'draft',
+        ]);
+
+        $this->actingAs($wartawan)
+            ->delete(route('admin.articles.destroy', $article))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('articles', [
+            'id' => $article->id,
+        ]);
+    }
 }

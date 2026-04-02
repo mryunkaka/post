@@ -77,6 +77,23 @@ class ArticleService
         return $article->refresh();
     }
 
+    public function delete(User $actor, Article $article): void
+    {
+        if ($actor->role === 'admin') {
+            $article->delete();
+
+            return;
+        }
+
+        if ($actor->role === 'editor' && in_array($article->status, ['draft', 'review'], true)) {
+            $article->delete();
+
+            return;
+        }
+
+        throw new AuthorizationException('Anda tidak memiliki izin menghapus artikel ini.');
+    }
+
     public function assertCanView(User $actor, Article $article): void
     {
         if (in_array($actor->role, ['admin', 'editor'], true)) {

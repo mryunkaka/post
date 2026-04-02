@@ -54,7 +54,7 @@
                                         {{ $article->updated_at?->format('d M Y H:i') }}
                                     </td>
                                     <td class="px-6 py-5 text-right">
-                                        <div class="flex justify-end gap-3">
+                                        <div class="flex items-center justify-end gap-3">
                                             <a href="{{ route('admin.articles.show', $article) }}"
                                                 class="text-sm font-semibold text-stone-500 transition hover:text-stone-900">
                                                 Lihat
@@ -63,6 +63,17 @@
                                                 class="text-sm font-semibold text-amber-700 transition hover:text-amber-900">
                                                 Edit
                                             </a>
+                                            @if (auth()->user()->role === 'admin' || (auth()->user()->role === 'editor' && in_array($article->status, ['draft', 'review'], true)))
+                                                <form method="POST" action="{{ route('admin.articles.destroy', $article) }}"
+                                                    onsubmit="return confirm('Hapus artikel ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="text-sm font-semibold text-rose-700 transition hover:text-rose-900">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

@@ -22,6 +22,20 @@
                 </div>
             @endif
 
+            @if (auth()->user()->role === 'admin' || (auth()->user()->role === 'editor' && in_array($article->status, ['draft', 'review'], true)))
+                <div class="flex justify-end">
+                    <form method="POST" action="{{ route('admin.articles.destroy', $article) }}"
+                        onsubmit="return confirm('Hapus artikel ini?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="inline-flex items-center rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-700 hover:text-rose-900">
+                            Hapus Artikel
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('admin.articles.update', $article) }}" class="space-y-6">
                 @method('PATCH')
                 @include('admin.articles._form')

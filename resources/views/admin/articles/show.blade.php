@@ -16,6 +16,26 @@
 
     <div class="py-10">
         <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
+            @if (session('status'))
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if (auth()->user()->role === 'admin' || (auth()->user()->role === 'editor' && in_array($article->status, ['draft', 'review'], true)))
+                <div class="flex justify-end">
+                    <form method="POST" action="{{ route('admin.articles.destroy', $article) }}"
+                        onsubmit="return confirm('Hapus artikel ini?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="inline-flex items-center rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-700 hover:text-rose-900">
+                            Hapus Artikel
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <div class="rounded-3xl border border-stone-200 bg-white p-8 shadow-sm">
                 <div class="flex flex-wrap gap-3">
                     <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900">
