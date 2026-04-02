@@ -185,6 +185,10 @@ Dokumen ini mengunci target stack implementasi awal.
   - cache driver: `file`
   - session driver: `file` atau `database`
   - queue driver: `database`
+- Pada shared hosting tertentu yang memakai MariaDB dan PHP `8.4`, koneksi `pdo_mysql` dapat memerlukan fallback:
+  - `DB_EMULATE_PREPARES=true`
+  - `DB_STRINGIFY_FETCHES=false`
+- Fallback ini dipakai bila native prepared statements menghasilkan hasil query yang korup, kosong, atau tidak konsisten saat runtime
 
 ### 3.4 Strategi AI Laravel 13
 
@@ -1661,6 +1665,9 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Mengimplementasikan login, logout, profile edit, dan dashboard internal
 - Menonaktifkan registrasi publik, password reset publik, confirm password, dan email verification route pada baseline awal
 - Menjaga stack frontend tetap pada `Tailwind CSS v4` setelah scaffolding auth
+- Menambahkan fallback konfigurasi PDO MySQL untuk shared hosting tertentu:
+  - `DB_EMULATE_PREPARES=true`
+  - `DB_STRINGIFY_FETCHES=false`
 
 ### 2026-04-01
 

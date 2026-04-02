@@ -3,6 +3,31 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+$mysqlConnectionOptions = static function (): array {
+    if (! extension_loaded('pdo_mysql')) {
+        return [];
+    }
+
+    $options = [];
+    $sslCa = env('MYSQL_ATTR_SSL_CA');
+    $emulatePrepares = env('DB_EMULATE_PREPARES');
+    $stringifyFetches = env('DB_STRINGIFY_FETCHES');
+
+    if (! is_null($sslCa) && $sslCa !== '') {
+        $options[PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
+    }
+
+    if (! is_null($emulatePrepares) && $emulatePrepares !== '') {
+        $options[PDO::ATTR_EMULATE_PREPARES] = filter_var($emulatePrepares, FILTER_VALIDATE_BOOL);
+    }
+
+    if (! is_null($stringifyFetches) && $stringifyFetches !== '') {
+        $options[PDO::ATTR_STRINGIFY_FETCHES] = filter_var($stringifyFetches, FILTER_VALIDATE_BOOL);
+    }
+
+    return $options;
+};
+
 return [
 
     /*
@@ -59,9 +84,7 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            'options' => $mysqlConnectionOptions(),
         ],
 
         'mariadb' => [
@@ -79,9 +102,7 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            'options' => $mysqlConnectionOptions(),
         ],
 
         'pgsql' => [
