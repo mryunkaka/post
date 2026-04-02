@@ -1726,6 +1726,7 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - field upload featured image dan preview di form artikel admin
   - preview featured image di ringkasan artikel
   - unit test penyimpanan media ke disk `public`
+- Menambahkan fallback route media publik agar preview featured image tetap berjalan pada environment yang belum memiliki symlink `public/storage` yang sehat
 
 ### 2026-04-01
 

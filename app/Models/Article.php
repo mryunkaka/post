@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Route;
 
 class Article extends Model
 {
@@ -66,6 +66,10 @@ class Article extends Model
             return null;
         }
 
-        return Storage::disk('public')->url($this->featured_image);
+        if (Route::has('media.public')) {
+            return route('media.public', ['path' => $this->featured_image]);
+        }
+
+        return null;
     }
 }

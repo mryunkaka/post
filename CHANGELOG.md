@@ -13,6 +13,7 @@
 - Menambahkan rich text editor admin berbasis Quill untuk konten artikel dengan sanitasi HTML ringan
 - Mengganti implementasi editor artikel dari Trix ke Quill karena interaksi toolbar Trix tidak stabil untuk workflow redaksi
 - Menambahkan upload featured image artikel dengan resize, konversi WebP, preview admin, dan pembersihan file lama
+- Menambahkan fallback route media publik untuk kompatibilitas shared hosting tanpa ketergantungan penuh pada `storage:link`
 
 # Release Notes
 
