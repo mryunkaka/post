@@ -43,6 +43,35 @@
 
             <div class="mt-5 space-y-5">
                 <div>
+                    <x-input-label for="featured_image" value="Featured Image" />
+                    @if ($article->featuredImageUrl())
+                        <div class="mt-2 overflow-hidden rounded-3xl border border-stone-200 bg-stone-50">
+                            <img src="{{ $article->featuredImageUrl() }}" alt="{{ $article->title }}"
+                                class="h-48 w-full object-cover">
+                        </div>
+                    @endif
+                    <input id="featured_image" name="featured_image" type="file" accept=".jpg,.jpeg,.png,.webp"
+                        class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-700 shadow-sm file:mr-4 file:rounded-full file:border-0 file:bg-stone-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-stone-700">
+                    <p class="mt-2 text-xs text-stone-500">Format: JPG, PNG, atau WebP. Maksimal 2MB. Gambar akan diubah ke WebP dan diperkecil otomatis.</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('featured_image')" />
+                </div>
+
+                @if ($article->featured_image)
+                    <label class="flex items-start gap-3 rounded-2xl border border-stone-200 p-4 text-sm text-stone-700">
+                        <input type="hidden" name="remove_featured_image" value="0">
+                        <input id="remove_featured_image" name="remove_featured_image" type="checkbox" value="1"
+                            class="mt-1 rounded border-stone-300 text-rose-600 shadow-sm focus:ring-rose-500"
+                            @checked(old('remove_featured_image'))>
+                        <span>Hapus featured image saat artikel disimpan.</span>
+                    </label>
+                    <x-input-error class="mt-2" :messages="$errors->get('remove_featured_image')" />
+                @else
+                    <input type="hidden" name="remove_featured_image" value="0">
+                @endif
+            </div>
+
+            <div class="mt-5 space-y-5">
+                <div>
                     <x-input-label for="category_id" value="Kategori" />
                     <select id="category_id" name="category_id"
                         class="mt-2 block w-full rounded-2xl border-stone-300 text-sm text-stone-900 shadow-sm focus:border-amber-500 focus:ring-amber-500"

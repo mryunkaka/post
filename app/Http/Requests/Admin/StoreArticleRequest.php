@@ -27,6 +27,8 @@ class StoreArticleRequest extends FormRequest
             ],
             'excerpt' => ['nullable', 'string'],
             'content' => ['required', 'string'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_featured_image' => ['nullable', 'boolean'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:255'],
             'schema_type' => ['required', 'string', 'max:100'],

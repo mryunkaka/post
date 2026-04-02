@@ -12,6 +12,7 @@
 - Menambahkan halaman admin setting situs dasar dan feature flags awal berbasis tabel `settings`
 - Menambahkan rich text editor admin berbasis Quill untuk konten artikel dengan sanitasi HTML ringan
 - Mengganti implementasi editor artikel dari Trix ke Quill karena interaksi toolbar Trix tidak stabil untuk workflow redaksi
+- Menambahkan upload featured image artikel dengan resize, konversi WebP, preview admin, dan pembersihan file lama
 
 # Release Notes
 

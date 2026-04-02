@@ -19,6 +19,7 @@
   - Manajemen kategori admin dasar sudah diimplementasikan
   - Setting situs admin dasar dan feature flag awal sudah diimplementasikan
   - Rich text editor admin dasar untuk artikel sudah diimplementasikan
+  - Upload featured image artikel dasar sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-02`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1529,10 +1530,10 @@ Format wajib:
   - File terkait: `routes/admin.php`, `resources/views/admin`, `app/Http/Controllers/Admin`, `app/Http/Requests/Admin`, `tests/Feature/AdminCategoryManagementTest.php`
   - Catatan: Admin panel internal dasar untuk artikel dan kategori sudah aktif; manajemen setting awal masih menjadi langkah berikutnya
 
-- [ ] Implement media upload dan image processing policy
-  - Status: `TODO`
-  - File terkait: `config/filesystems.php`, `app/Services/MediaService.php`, `app/Http/Requests`, `storage/app/public`
-  - Catatan: Termasuk resize otomatis, hash filename, validasi format, ukuran maksimal 2MB, struktur folder upload artikel, dan integrasi image library
+- [x] Implement media upload dan image processing policy
+  - Status: `DONE`
+  - File terkait: `config/filesystems.php`, `app/Services/MediaService.php`, `app/Http/Requests/Admin/StoreArticleRequest.php`, `app/Services/ArticleService.php`, `resources/views/admin/articles`, `storage/app/public`, `tests/Unit/MediaServiceTest.php`
+  - Catatan: Featured image artikel kini mendukung upload, resize maksimal 1200px, konversi WebP, validasi format, batas ukuran 2MB, hash filename berbasis ULID, preview admin, dan replace/delete file lama
 
 - [ ] Implement tags system
   - Status: `TODO`
@@ -1719,6 +1720,12 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - menonaktifkan upload file langsung dari editor sampai modul media siap
   - menambahkan sanitasi HTML ringan di `ArticleService`
 - Mengganti implementasi editor artikel dari `Trix` ke `Quill` karena toolbar Trix tidak stabil dipakai pada workflow redaksi yang sedang diuji
+- Mengimplementasikan media upload artikel dasar melalui:
+  - `MediaService` untuk resize, konversi WebP, optimasi optional, dan delete file lama
+  - validasi featured image di request artikel admin
+  - field upload featured image dan preview di form artikel admin
+  - preview featured image di ringkasan artikel
+  - unit test penyimpanan media ke disk `public`
 
 ### 2026-04-01
 
@@ -1930,6 +1937,7 @@ Status aktual per `2026-04-02`:
 - Setting situs admin dasar: sudah ada
 - Feature flag system dasar: sudah ada
 - Rich text editor artikel admin dasar: sudah ada
+- Featured image artikel admin dasar: sudah ada
 - Frontend publik kustom: belum ada
 
 Kesimpulan:

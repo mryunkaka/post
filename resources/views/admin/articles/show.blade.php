@@ -65,6 +65,13 @@
                     </div>
                 </dl>
 
+                @if ($article->featuredImageUrl())
+                    <div class="mt-8 overflow-hidden rounded-3xl border border-stone-200">
+                        <img src="{{ $article->featuredImageUrl() }}" alt="{{ $article->title }}"
+                            class="h-auto w-full object-cover">
+                    </div>
+                @endif
+
                 @if ($article->excerpt)
                     <div class="mt-8 rounded-2xl bg-stone-50 p-5">
                         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Excerpt</p>
@@ -72,8 +79,8 @@
                     </div>
                 @endif
 
-                <div class="prose prose-stone mt-8 max-w-none whitespace-pre-line text-sm leading-7">
-                    {{ $article->content }}
+                <div class="prose prose-stone mt-8 max-w-none text-sm leading-7">
+                    {!! $article->content !!}
                 </div>
             </div>
         </div>

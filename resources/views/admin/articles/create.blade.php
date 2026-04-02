@@ -10,7 +10,7 @@
 
     <div class="py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('admin.articles.store') }}" class="space-y-6">
+            <form method="POST" action="{{ route('admin.articles.store') }}" enctype="multipart/form-data" class="space-y-6">
                 @include('admin.articles._form')
             </form>
         </div>

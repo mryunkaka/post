@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Models\Article;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 
 class ArticleService
 {
     public function __construct(
         protected SlugService $slugService,
+        protected MediaService $mediaService,
     ) {}
 
     /**
@@ -80,12 +82,14 @@ class ArticleService
     public function delete(User $actor, Article $article): void
     {
         if ($actor->role === 'admin') {
+            $this->mediaService->deletePublicFile($article->featured_image);
             $article->delete();
 
             return;
         }
 
         if ($actor->role === 'editor' && in_array($article->status, ['draft', 'review'], true)) {
+            $this->mediaService->deletePublicFile($article->featured_image);
             $article->delete();
 
             return;
@@ -135,6 +139,7 @@ class ArticleService
             'slug' => $this->slugService->generateUniqueSlug($slugSource, Article::class, 'slug', $article),
             'excerpt' => $this->nullableString($data, 'excerpt'),
             'content' => $this->sanitizeHtml((string) $data['content']),
+            'featured_image' => $this->resolveFeaturedImage($data, $article),
             'meta_title' => $this->nullableString($data, 'meta_title'),
             'meta_description' => $this->nullableString($data, 'meta_description'),
             'schema_type' => Arr::get($data, 'schema_type', 'NewsArticle') ?: 'NewsArticle',
@@ -174,5 +179,25 @@ class ArticleService
         $sanitized = preg_replace('/javascript:/i', '', $sanitized) ?? $sanitized;
 
         return $sanitized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function resolveFeaturedImage(array $data, Article $article): ?string
+    {
+        if (Arr::get($data, 'remove_featured_image', false)) {
+            $this->mediaService->deletePublicFile($article->featured_image);
+
+            return null;
+        }
+
+        $uploadedFile = Arr::get($data, 'featured_image');
+
+        if ($uploadedFile instanceof UploadedFile) {
+            return $this->mediaService->storeArticleFeaturedImage($uploadedFile, $article->featured_image);
+        }
+
+        return $article->featured_image;
     }
 }

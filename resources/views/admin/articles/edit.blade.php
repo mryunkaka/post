@@ -36,7 +36,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.articles.update', $article) }}" class="space-y-6">
+            <form method="POST" action="{{ route('admin.articles.update', $article) }}" enctype="multipart/form-data" class="space-y-6">
                 @method('PATCH')
                 @include('admin.articles._form')
             </form>

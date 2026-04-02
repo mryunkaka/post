@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Article extends Model
 {
@@ -57,5 +58,14 @@ class Article extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function featuredImageUrl(): ?string
+    {
+        if ($this->featured_image === null || $this->featured_image === '') {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->featured_image);
     }
 }
