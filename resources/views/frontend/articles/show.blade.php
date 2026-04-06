@@ -60,6 +60,123 @@
                 {!! $article->content !!}
             </div>
 
+            <section x-data="{ replyTo: @js(null), replyAuthor: '' }" class="space-y-6 rounded-[2rem] border border-stone-200/80 bg-white p-8 shadow-[0_28px_90px_-54px_rgba(28,25,23,0.4)]">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">Komentar</p>
+                        <h2 class="mt-2 text-3xl font-semibold text-stone-950">Diskusi pembaca</h2>
+                    </div>
+                    <span class="rounded-full bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-700">
+                        {{ $approvedComments->count() }} top-level
+                    </span>
+                </div>
+
+                @if (session('comment_status'))
+                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+                        {{ session('comment_status') }}
+                    </div>
+                @endif
+
+                @if ($commentsEnabled)
+                    <form method="POST" action="{{ route('comments.store', $article->slug) }}" class="space-y-5 rounded-[1.75rem] border border-stone-200 bg-stone-50/80 p-6">
+                        @csrf
+                        <input type="hidden" name="parent_id" :value="replyTo">
+
+                        <div x-show="replyTo" x-cloak class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                            <div class="flex items-center justify-between gap-3">
+                                <p>Anda sedang membalas komentar dari <strong x-text="replyAuthor"></strong>.</p>
+                                <button type="button" class="font-semibold" @click="replyTo = null; replyAuthor = ''">
+                                    Batal balas
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label for="guest_name" class="text-sm font-semibold text-stone-800">Nama</label>
+                                <input id="guest_name" name="guest_name" type="text" value="{{ old('guest_name') }}" class="mt-2 w-full rounded-2xl border-stone-300 bg-white px-4 py-3 text-sm focus:border-amber-500 focus:ring-amber-500">
+                                @error('guest_name')
+                                    <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="guest_email" class="text-sm font-semibold text-stone-800">Email</label>
+                                <input id="guest_email" name="guest_email" type="email" value="{{ old('guest_email') }}" class="mt-2 w-full rounded-2xl border-stone-300 bg-white px-4 py-3 text-sm focus:border-amber-500 focus:ring-amber-500">
+                                @error('guest_email')
+                                    <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="hidden">
+                            <label for="website">Website</label>
+                            <input id="website" name="website" type="text" value="{{ old('website') }}" tabindex="-1" autocomplete="off">
+                        </div>
+
+                        <div>
+                            <label for="content" class="text-sm font-semibold text-stone-800">Komentar</label>
+                            <textarea id="content" name="content" rows="5" class="mt-2 w-full rounded-[1.5rem] border-stone-300 bg-white px-4 py-3 text-sm focus:border-amber-500 focus:ring-amber-500">{{ old('content') }}</textarea>
+                            @error('content')
+                                <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
+                            @enderror
+                            @error('parent_id')
+                                <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p class="text-sm text-stone-500">Komentar akan tampil setelah disetujui editor atau admin.</p>
+                            <button type="submit" class="rounded-full bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800">
+                                Kirim Komentar
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <div class="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50 px-6 py-8 text-sm text-stone-500">
+                        Fitur komentar sedang nonaktif.
+                    </div>
+                @endif
+
+                <div class="space-y-5">
+                    @forelse ($approvedComments as $comment)
+                        <article class="rounded-[1.75rem] border border-stone-200 bg-stone-50/70 p-5">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="font-semibold text-stone-900">{{ $comment->displayName() }}</p>
+                                    <p class="mt-1 text-xs uppercase tracking-[0.2em] text-stone-500">{{ $comment->created_at?->format('d M Y H:i') }}</p>
+                                </div>
+                                @if ($commentsEnabled)
+                                    <button
+                                        type="button"
+                                        class="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:border-stone-900 hover:text-stone-900"
+                                        @click="replyTo = {{ $comment->id }}; replyAuthor = @js($comment->displayName())"
+                                    >
+                                        Balas
+                                    </button>
+                                @endif
+                            </div>
+                            <p class="mt-4 whitespace-pre-line text-sm leading-7 text-stone-700">{{ $comment->content }}</p>
+
+                            @if ($comment->replies->isNotEmpty())
+                                <div class="mt-5 space-y-4 border-l border-stone-200 pl-5">
+                                    @foreach ($comment->replies as $reply)
+                                        <article class="rounded-[1.5rem] bg-white p-4">
+                                            <p class="font-semibold text-stone-900">{{ $reply->displayName() }}</p>
+                                            <p class="mt-1 text-xs uppercase tracking-[0.2em] text-stone-500">{{ $reply->created_at?->format('d M Y H:i') }}</p>
+                                            <p class="mt-3 whitespace-pre-line text-sm leading-7 text-stone-700">{{ $reply->content }}</p>
+                                        </article>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </article>
+                    @empty
+                        <div class="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50 px-6 py-8 text-sm text-stone-500">
+                            Belum ada komentar yang tayang.
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+
             <section class="space-y-5">
                 <div class="flex items-center justify-between gap-3">
                     <div>

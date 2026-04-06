@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Front\ArticleController as FrontArticleController;
 use App\Http\Controllers\Front\CategoryController as FrontCategoryController;
+use App\Http\Controllers\Front\CommentController as FrontCommentController;
 use App\Http\Controllers\Front\HomeController as FrontHomeController;
 use App\Http\Controllers\Front\SearchController as FrontSearchController;
 use App\Http\Controllers\ProfileController;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('throttle:public')->group(function (): void {
     Route::get('/', FrontHomeController::class)->name('home');
     Route::get('/berita/{articleSlug}', [FrontArticleController::class, 'show'])->name('articles.show');
+    Route::post('/berita/{articleSlug}/komentar', [FrontCommentController::class, 'store'])->name('comments.store');
     Route::get('/kategori/{categorySlug}', [FrontCategoryController::class, 'show'])->name('categories.show');
     Route::get('/cari', FrontSearchController::class)->name('search.index');
 

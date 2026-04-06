@@ -2,6 +2,10 @@
 
 ## 2026-04-07
 
+- Menambahkan model, service, controller, request, route, dan view untuk guest comment policy serta moderation flow komentar
+- Menambahkan form komentar publik dengan honeypot, pending moderation, dan reply maksimal satu level
+- Menambahkan halaman admin moderasi komentar dengan aksi approve, reject, dan spam untuk editor/admin
+- Menambahkan feature test untuk submit komentar guest, honeypot, pembatasan reply, dan approve komentar
 - Menambahkan `EditorialMailService`, mailable editorial, dan template email untuk flow submit review, scheduled publish, dan publish artikel
 - Mengubah mailer default ke failover `smtp -> log` dan menambahkan konfigurasi queue mail di `.env.example`
 - Menghubungkan workflow artikel agar notifikasi email dikirim via antrean `mail`, bukan synchronous di request cycle

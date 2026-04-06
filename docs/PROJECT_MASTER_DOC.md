@@ -23,6 +23,7 @@
 - Sistem tag artikel dasar sudah diimplementasikan
 - Backup strategy dasar dan dokumentasi recovery sudah diimplementasikan
 - Mail system asynchronous dasar sudah diimplementasikan
+- Guest comment policy dan moderation flow dasar sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-07`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1598,10 +1599,10 @@ Format wajib:
   - File terkait: `app/Http/Controllers/Front`, `app/Services/ArticleService.php`, `routes`
   - Catatan: Artikel arsip kini bisa diarsipkan/pulihkan dari admin, query publik tetap mengecualikan arsip, dan akses direct ke URL artikel arsip mengembalikan `410 Gone`
 
-- [ ] Implement guest comment policy dan moderation flow
-  - Status: `TODO`
-  - File terkait: `app/Models/Comment.php`, `app/Http/Controllers`, `app/Http/Requests`, `resources/views/frontend`
-  - Catatan: Guest comment aktif, status default pending, honeypot aktif, depth reply maksimal 1 level
+- [x] Implement guest comment policy dan moderation flow
+  - Status: `DONE`
+  - File terkait: `app/Models/Comment.php`, `app/Services/CommentService.php`, `app/Http/Controllers/Front/CommentController.php`, `app/Http/Controllers/Admin/CommentController.php`, `app/Http/Requests/Front/StoreCommentRequest.php`, `routes/web.php`, `routes/admin.php`, `resources/views/frontend/articles/show.blade.php`, `resources/views/admin/comments`, `tests/Feature/GuestCommentFlowTest.php`
+  - Catatan: Guest comment aktif di artikel publik, semua komentar baru masuk `pending`, honeypot aktif, metadata `ip_address` dan `user_agent` disimpan, reply hanya ke komentar root approved, dan editor/admin dapat memoderasi komentar dari panel admin
 
 ## 20. Changelog
 
@@ -1609,6 +1610,17 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 
 ### 2026-04-07
 
+- Mengimplementasikan guest comment policy dan moderation flow dasar proyek:
+  - komentar tamu aktif di halaman artikel publik
+  - semua komentar baru disimpan dengan status `pending`
+  - honeypot field aktif untuk anti-spam fase awal
+  - reply hanya diizinkan maksimal satu level
+  - `ip_address` dan `user_agent` dicatat untuk moderasi
+- Menambahkan `Comment` model, `CommentService`, request submit komentar publik, route submit komentar, dan halaman moderasi komentar admin
+- Menambahkan tampilan komentar approved di halaman artikel publik beserta form guest comment dan reply ke komentar root
+- Menambahkan aksi moderasi `approve`, `reject`, dan `spam` untuk editor/admin di panel admin
+- Menambahkan feature test komentar publik dan moderasi admin
+- Verifikasi feature test komentar penuh masih terhambat di environment ini karena driver `pdo_sqlite` belum tersedia untuk test database
 - Mengimplementasikan mail system asynchronous dasar proyek:
   - default mailer digeser ke failover `smtp -> log`
   - queue email memakai Laravel Queue dengan queue name `mail`

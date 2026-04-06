@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,10 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
 
         Route::middleware('role:admin,editor')->group(function (): void {
             Route::resource('categories', CategoryController::class)->except('show');
+            Route::get('comments', [CommentController::class, 'index'])->name('comments.index');
+            Route::patch('comments/{comment}/approve', [CommentController::class, 'approve'])->name('comments.approve');
+            Route::patch('comments/{comment}/reject', [CommentController::class, 'reject'])->name('comments.reject');
+            Route::patch('comments/{comment}/spam', [CommentController::class, 'spam'])->name('comments.spam');
         });
 
         Route::middleware('role:admin')->group(function (): void {

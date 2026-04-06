@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Services\ArticleViewBufferService;
+use App\Services\CommentService;
 use App\Services\FrontCacheService;
 use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 
@@ -13,12 +14,28 @@ class ArticleController extends Controller
     public function __construct(
         protected FrontCacheService $frontCacheService,
         protected ArticleViewBufferService $articleViewBufferService,
+        protected CommentService $commentService,
     ) {}
 
     public function show(string $articleSlug)
     {
         $article = Article::query()
-            ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug'])
+            ->with([
+                'author:id,name',
+                'category:id,name,slug',
+                'tags:id,name,slug',
+                'comments' => fn ($query) => $query
+                    ->approved()
+                    ->rootLevel()
+                    ->with([
+                        'author:id,name',
+                        'replies' => fn ($replyQuery) => $replyQuery
+                            ->approved()
+                            ->with('author:id,name')
+                            ->oldest(),
+                    ])
+                    ->oldest(),
+            ])
             ->where('slug', $articleSlug)
             ->firstOrFail();
 
@@ -54,6 +71,8 @@ class ArticleController extends Controller
             'article' => $article,
             'relatedArticles' => $relatedArticles,
             'popularArticles' => $popularArticles,
+            'commentsEnabled' => $this->commentService->commentsEnabled(),
+            'approvedComments' => $article->comments,
             'metaTitle' => $article->meta_title ?: $article->title,
             'metaDescription' => $article->meta_description ?: $article->excerpt,
         ]);

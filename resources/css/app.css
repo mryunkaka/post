@@ -11,6 +11,10 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+[x-cloak] {
+    display: none !important;
+}
+
 [data-rich-editor] .ql-toolbar.ql-snow {
     border-top-left-radius: 1.5rem;
     border-top-right-radius: 1.5rem;
