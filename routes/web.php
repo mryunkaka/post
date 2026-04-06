@@ -8,18 +8,20 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMediaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', FrontHomeController::class)->name('home');
-Route::get('/berita/{articleSlug}', [FrontArticleController::class, 'show'])->name('articles.show');
-Route::get('/kategori/{categorySlug}', [FrontCategoryController::class, 'show'])->name('categories.show');
-Route::get('/cari', FrontSearchController::class)->name('search.index');
+Route::middleware('throttle:public')->group(function (): void {
+    Route::get('/', FrontHomeController::class)->name('home');
+    Route::get('/berita/{articleSlug}', [FrontArticleController::class, 'show'])->name('articles.show');
+    Route::get('/kategori/{categorySlug}', [FrontCategoryController::class, 'show'])->name('categories.show');
+    Route::get('/cari', FrontSearchController::class)->name('search.index');
+
+    Route::get('/media/public/{path}', [PublicMediaController::class, 'show'])
+        ->where('path', '.*')
+        ->name('media.public');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'role:admin,editor,wartawan'])->name('dashboard');
-
-Route::get('/media/public/{path}', [PublicMediaController::class, 'show'])
-    ->where('path', '.*')
-    ->name('media.public');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

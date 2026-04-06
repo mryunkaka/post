@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -50,5 +51,26 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_login_route_is_rate_limited_after_ten_requests_per_ip(): void
+    {
+        RateLimiter::clear('127.0.0.1');
+
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $this->from('/login')
+                ->post('/login', [
+                    'email' => 'missing-user@local.test',
+                    'password' => 'wrong-password',
+                ])
+                ->assertSessionHasErrors('email');
+        }
+
+        $this->from('/login')
+            ->post('/login', [
+                'email' => 'missing-user@local.test',
+                'password' => 'wrong-password',
+            ])
+            ->assertStatus(429);
     }
 }

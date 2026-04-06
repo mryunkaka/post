@@ -1,5 +1,14 @@
 # Project Changelog
 
+## 2026-04-07
+
+- Menambahkan named rate limiter `public`, `auth-login`, dan `api` di bootstrap aplikasi
+- Menerapkan throttle `60/min` pada route frontend publik dan `10/min` pada endpoint login
+- Menambahkan fondasi `routes/api.php` dengan middleware throttle `api`
+- Menyetel rate limiter agar memakai cache store `file` sebagai fallback shared hosting tanpa Redis
+- Menyesuaikan lockout login internal menjadi `10` percobaan per menit per IP agar sinkron dengan docs
+- Menambahkan test coverage untuk limiter login, publik, dan API
+
 ## 2026-04-02
 
 - Menambahkan CRUD artikel internal dasar untuk flow `draft -> review -> published`

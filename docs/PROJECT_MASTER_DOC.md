@@ -22,7 +22,7 @@
   - Upload featured image artikel dasar sudah diimplementasikan
   - Sistem tag artikel dasar sudah diimplementasikan
 - Document status: `ACTIVE`
-- Last updated: `2026-04-02`
+- Last updated: `2026-04-07`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
 
 ## 1. Project Overview
@@ -1546,10 +1546,10 @@ Format wajib:
   - File terkait: `app/Http/Controllers/Front`, `resources/views/frontend`, `routes/web.php`, `app/Providers/AppServiceProvider.php`, `app/Models/Article.php`, `app/Models/Category.php`
   - Catatan: Homepage publik, detail artikel, halaman kategori, dan pencarian dasar sudah aktif dengan query hanya untuk artikel `published`, non-archive, dan URL SEO-friendly
 
-- [ ] Implement rate limiting untuk publik, auth, dan API
-  - Status: `TODO`
-  - File terkait: `bootstrap/app.php`, `routes`, `app/Providers`
-  - Catatan: Gunakan throttle middleware dengan fallback cache driver file bila Redis tidak tersedia
+- [x] Implement rate limiting untuk publik, auth, dan API
+  - Status: `DONE`
+  - File terkait: `bootstrap/app.php`, `routes/web.php`, `routes/auth.php`, `routes/api.php`, `config/cache.php`, `app/Http/Requests/Auth/LoginRequest.php`, `tests/Feature/Auth/AuthenticationTest.php`, `tests/Feature/RateLimitingTest.php`
+  - Catatan: Named limiter `public`, `auth-login`, dan `api` sudah aktif; route publik memakai `60 request per menit per IP`, login memakai `10 request per menit per IP`, API foundation memakai `30 request per menit per user atau IP`, dan rate limiter diarahkan ke cache store `file` sebagai fallback shared hosting
 
 - [ ] Implement backup strategy dan dokumentasi recovery
   - Status: `TODO`
@@ -1604,6 +1604,18 @@ Format wajib:
 ## 20. Changelog
 
 Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, catat di bagian ini.
+
+### 2026-04-07
+
+- Mengimplementasikan rate limiting dasar proyek:
+  - limiter `public` untuk route frontend publik dengan batas `60 request per menit per IP`
+  - limiter `auth-login` untuk halaman dan submit login dengan batas `10 request per menit per IP`
+  - limiter `api` untuk fondasi route API dengan batas `30 request per menit per user atau IP`
+- Menambahkan `routes/api.php` sebagai fondasi route API terpisah yang sudah siap memakai throttle
+- Menyetel `config/cache.php` agar rate limiter default memakai cache store `file` demi fallback shared hosting tanpa Redis
+- Menyesuaikan lockout login internal agar konsisten dengan batas docs
+- Menambahkan coverage test untuk login throttling serta limiter publik dan API
+- Verifikasi otomatis penuh masih terhambat di environment ini karena driver `pdo_sqlite` belum tersedia untuk test database
 
 ### 2026-04-02
 

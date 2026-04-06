@@ -19,6 +19,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Rate Limiter Cache Store
+    |--------------------------------------------------------------------------
+    |
+    | Shared hosting deployments may not have Redis available. Rate limiting
+    | should therefore fall back to the file cache store unless overridden.
+    |
+    */
+
+    'limiter' => env('CACHE_LIMITER', 'file'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
@@ -95,6 +107,7 @@ return [
             'driver' => 'failover',
             'stores' => [
                 'database',
+                'file',
                 'array',
             ],
         ],
