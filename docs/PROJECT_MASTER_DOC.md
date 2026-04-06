@@ -22,6 +22,7 @@
 - Upload featured image artikel dasar sudah diimplementasikan
 - Sistem tag artikel dasar sudah diimplementasikan
 - Backup strategy dasar dan dokumentasi recovery sudah diimplementasikan
+- Mail system asynchronous dasar sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-07`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1572,10 +1573,10 @@ Format wajib:
   - File terkait: `app/Services`, `config/cache.php`, `app/Http/Controllers`
   - Catatan: Kategori aktif, settings autoload, payload homepage, dan artikel populer kini memakai cache key konsisten dengan invalidation eksplisit saat mutasi data terkait
 
-- [ ] Implement mail system asynchronous
-  - Status: `TODO`
-  - File terkait: `config/mail.php`, `.env`, `app/Mail`, `app/Jobs`
-  - Catatan: SMTP fase awal, queue wajib, tanpa pengiriman synchronous di request cycle
+- [x] Implement mail system asynchronous
+  - Status: `DONE`
+  - File terkait: `config/mail.php`, `.env.example`, `app/Mail`, `app/Services/EditorialMailService.php`, `app/Services/ArticleService.php`, `resources/views/emails`, `tests/Unit/EditorialMailServiceTest.php`, `tests/Feature/AdminArticleWorkflowTest.php`
+  - Catatan: Default mailer kini memakai failover `smtp -> log`, queue mail memakai queue Laravel pada queue `mail`, pengiriman editorial dilakukan via `Mail::queue()`, dan flow artikel aktif kini dapat mengantrikan email submit review, scheduled publish, serta publish final tanpa kirim synchronous di request cycle
 
 - [x] Implement feature flag system
   - Status: `DONE`
@@ -1608,6 +1609,21 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 
 ### 2026-04-07
 
+- Mengimplementasikan mail system asynchronous dasar proyek:
+  - default mailer digeser ke failover `smtp -> log`
+  - queue email memakai Laravel Queue dengan queue name `mail`
+  - konfigurasi mail dan queue mail ditambahkan ke `.env.example`
+- Menambahkan `EditorialMailService` untuk mengantrikan email editorial tanpa pengiriman synchronous di request cycle
+- Menambahkan mailable dan template email untuk:
+  - artikel diajukan ke review
+  - artikel dijadwalkan publish
+  - artikel selesai dipublish
+- Menghubungkan workflow artikel aktif ke mail async:
+  - submit review mengirim email ke editor/admin aktif
+  - publish atau scheduled publish mengirim email ke author aktif
+  - scheduler publish due article juga mengirim email ke author aktif
+- Menambahkan unit test mail async tanpa dependensi database untuk memverifikasi mailable benar-benar di-queue
+- Verifikasi feature test workflow artikel masih terhambat di environment ini karena driver `pdo_sqlite` belum tersedia untuk test database
 - Mengimplementasikan backup strategy dasar proyek:
   - command `backup:database` untuk dump MySQL harian
   - command `backup:media` untuk arsip zip media publik

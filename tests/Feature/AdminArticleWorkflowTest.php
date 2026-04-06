@@ -2,10 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ArticlePublishedMail;
+use App\Mail\ArticleScheduledMail;
+use App\Mail\ArticleSubmittedForReviewMail;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class AdminArticleWorkflowTest extends TestCase
@@ -14,8 +18,18 @@ class AdminArticleWorkflowTest extends TestCase
 
     public function test_wartawan_can_create_and_submit_article_for_review(): void
     {
+        Mail::fake();
+
         $user = User::factory()->create([
             'role' => 'wartawan',
+        ]);
+        $editor = User::factory()->create([
+            'role' => 'editor',
+            'email' => 'editor@example.com',
+        ]);
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'email' => 'admin@example.com',
         ]);
         $category = Category::factory()->create();
 
@@ -44,14 +58,24 @@ class AdminArticleWorkflowTest extends TestCase
             ->assertRedirect(route('admin.articles.edit', $article));
 
         $this->assertSame('review', $article->refresh()->status);
+        Mail::assertQueued(ArticleSubmittedForReviewMail::class, 2);
+        Mail::assertQueued(ArticleSubmittedForReviewMail::class, fn (ArticleSubmittedForReviewMail $mail) => $mail->hasTo($editor->email));
+        Mail::assertQueued(ArticleSubmittedForReviewMail::class, fn (ArticleSubmittedForReviewMail $mail) => $mail->hasTo($admin->email));
     }
 
     public function test_editor_can_publish_article(): void
     {
+        Mail::fake();
+
+        $author = User::factory()->create([
+            'role' => 'wartawan',
+            'email' => 'author@example.com',
+        ]);
         $editor = User::factory()->create([
             'role' => 'editor',
         ]);
         $article = Article::factory()->create([
+            'user_id' => $author->id,
             'status' => 'review',
             'published_at' => null,
         ]);
@@ -64,16 +88,24 @@ class AdminArticleWorkflowTest extends TestCase
 
         $this->assertSame('published', $article->status);
         $this->assertNotNull($article->published_at);
+        Mail::assertQueued(ArticlePublishedMail::class, fn (ArticlePublishedMail $mail) => $mail->hasTo($author->email));
     }
 
     public function test_editor_can_schedule_article_publish(): void
     {
+        Mail::fake();
+
+        $author = User::factory()->create([
+            'role' => 'wartawan',
+            'email' => 'author@example.com',
+        ]);
         $editor = User::factory()->create([
             'role' => 'editor',
         ]);
         $category = Category::factory()->create();
         $article = Article::factory()->create([
             'status' => 'review',
+            'user_id' => $author->id,
             'category_id' => $category->id,
             'published_at' => now()->addHour(),
         ]);
@@ -86,6 +118,28 @@ class AdminArticleWorkflowTest extends TestCase
 
         $this->assertSame('review', $article->status);
         $this->assertTrue($article->published_at->isFuture());
+        Mail::assertQueued(ArticleScheduledMail::class, fn (ArticleScheduledMail $mail) => $mail->hasTo($author->email));
+    }
+
+    public function test_scheduled_publish_command_queues_author_notification_mail(): void
+    {
+        Mail::fake();
+
+        $author = User::factory()->create([
+            'role' => 'wartawan',
+            'email' => 'author@example.com',
+        ]);
+        $article = Article::factory()->create([
+            'user_id' => $author->id,
+            'status' => 'review',
+            'published_at' => now()->subMinute(),
+        ]);
+
+        $this->artisan('articles:publish-scheduled')
+            ->assertSuccessful();
+
+        $this->assertSame('published', $article->fresh()->status);
+        Mail::assertQueued(ArticlePublishedMail::class, fn (ArticlePublishedMail $mail) => $mail->hasTo($author->email));
     }
 
     public function test_wartawan_cannot_edit_other_users_article(): void

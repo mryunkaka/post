@@ -2,6 +2,10 @@
 
 ## 2026-04-07
 
+- Menambahkan `EditorialMailService`, mailable editorial, dan template email untuk flow submit review, scheduled publish, dan publish artikel
+- Mengubah mailer default ke failover `smtp -> log` dan menambahkan konfigurasi queue mail di `.env.example`
+- Menghubungkan workflow artikel agar notifikasi email dikirim via antrean `mail`, bukan synchronous di request cycle
+- Menambahkan unit test untuk memverifikasi mail editorial benar-benar di-queue
 - Menambahkan `BackupService`, `config/backup.php`, dan tiga command backup: `backup:database`, `backup:media`, dan `backup:prune`
 - Menjadwalkan backup database harian, backup media terpisah, dan prune retensi 7 hari di Laravel Scheduler
 - Menambahkan `docs/RECOVERY.md` untuk prosedur backup manual dan restore

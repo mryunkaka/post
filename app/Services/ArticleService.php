@@ -16,6 +16,7 @@ class ArticleService
         protected MediaService $mediaService,
         protected TagService $tagService,
         protected FrontCacheService $frontCacheService,
+        protected EditorialMailService $editorialMailService,
     ) {}
 
     /**
@@ -63,6 +64,7 @@ class ArticleService
             'review_notes' => null,
         ])->save();
         $this->frontCacheService->flushArticleRelatedCaches();
+        $this->editorialMailService->queueArticleSubmittedForReview($article->refresh(), $actor);
 
         return $article->refresh();
     }
@@ -84,6 +86,7 @@ class ArticleService
                 'status' => 'review',
             ])->save();
             $this->frontCacheService->flushArticleRelatedCaches();
+            $this->editorialMailService->queueArticleScheduled($article->refresh(), $actor);
 
             return $article->refresh();
         }
@@ -93,6 +96,7 @@ class ArticleService
             'published_at' => $scheduledAt instanceof Carbon ? $scheduledAt : now(),
         ])->save();
         $this->frontCacheService->flushArticleRelatedCaches();
+        $this->editorialMailService->queueArticlePublished($article->refresh(), $actor);
 
         return $article->refresh();
     }
@@ -138,6 +142,7 @@ class ArticleService
             $article->forceFill([
                 'status' => 'published',
             ])->save();
+            $this->editorialMailService->queueArticlePublished($article->refresh());
         }
 
         if ($articles->isNotEmpty()) {
