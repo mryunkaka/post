@@ -2,6 +2,7 @@
 
 ## 2026-04-07
 
+- Mengalihkan konfigurasi PHPUnit dari `pdo_sqlite` ke MySQL `media_test` dan menstabilkan test rate limiting agar aman dijalankan berulang
 - Menambahkan model, service, controller, request, route, dan view untuk guest comment policy serta moderation flow komentar
 - Menambahkan form komentar publik dengan honeypot, pending moderation, dan reply maksimal satu level
 - Menambahkan halaman admin moderasi komentar dengan aksi approve, reject, dan spam untuk editor/admin

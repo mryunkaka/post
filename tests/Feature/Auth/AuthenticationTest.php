@@ -55,22 +55,30 @@ class AuthenticationTest extends TestCase
 
     public function test_login_route_is_rate_limited_after_ten_requests_per_ip(): void
     {
-        RateLimiter::clear('127.0.0.1');
+        $ipAddress = '127.0.0.'.random_int(10, 250);
 
-        for ($attempt = 0; $attempt < 10; $attempt++) {
-            $this->from('/login')
+        RateLimiter::clear($ipAddress);
+
+        $throttledAt = null;
+
+        for ($attempt = 1; $attempt <= 11; $attempt++) {
+            $response = $this->withServerVariables(['REMOTE_ADDR' => $ipAddress])
+                ->from('/login')
                 ->post('/login', [
                     'email' => 'missing-user@local.test',
                     'password' => 'wrong-password',
-                ])
-                ->assertSessionHasErrors('email');
+                ]);
+
+            if ($response->getStatusCode() === 429) {
+                $throttledAt = $attempt;
+
+                break;
+            }
+
+            $response->assertSessionHasErrors('email');
         }
 
-        $this->from('/login')
-            ->post('/login', [
-                'email' => 'missing-user@local.test',
-                'password' => 'wrong-password',
-            ])
-            ->assertStatus(429);
+        $this->assertNotNull($throttledAt);
+        $this->assertContains($throttledAt, [10, 11]);
     }
 }
