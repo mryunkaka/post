@@ -2,6 +2,10 @@
 
 ## 2026-04-07
 
+- Menambahkan `BackupService`, `config/backup.php`, dan tiga command backup: `backup:database`, `backup:media`, dan `backup:prune`
+- Menjadwalkan backup database harian, backup media terpisah, dan prune retensi 7 hari di Laravel Scheduler
+- Menambahkan `docs/RECOVERY.md` untuk prosedur backup manual dan restore
+- Menambahkan konfigurasi backup ke `.env.example` dan test coverage untuk command backup
 - Menambahkan named rate limiter `public`, `auth-login`, dan `api` di bootstrap aplikasi
 - Menerapkan throttle `60/min` pada route frontend publik dan `10/min` pada endpoint login
 - Menambahkan fondasi `routes/api.php` dengan middleware throttle `api`

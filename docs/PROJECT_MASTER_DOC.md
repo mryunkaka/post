@@ -17,10 +17,11 @@
   - CRUD artikel internal dasar sudah diimplementasikan
   - Slug service dan route admin artikel dasar sudah diimplementasikan
   - Manajemen kategori admin dasar sudah diimplementasikan
-  - Setting situs admin dasar dan feature flag awal sudah diimplementasikan
-  - Rich text editor admin dasar untuk artikel sudah diimplementasikan
-  - Upload featured image artikel dasar sudah diimplementasikan
-  - Sistem tag artikel dasar sudah diimplementasikan
+- Setting situs admin dasar dan feature flag awal sudah diimplementasikan
+- Rich text editor admin dasar untuk artikel sudah diimplementasikan
+- Upload featured image artikel dasar sudah diimplementasikan
+- Sistem tag artikel dasar sudah diimplementasikan
+- Backup strategy dasar dan dokumentasi recovery sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-07`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -1219,7 +1220,7 @@ Logging harus membantu debugging, audit, dan monitoring tanpa menghasilkan noise
 - Retensi backup: `7 hari` terakhir wajib tersedia
 - Backup file media dijadwalkan terpisah
 - Prosedur restore wajib didokumentasikan di `docs/RECOVERY.md`
-- File `docs/RECOVERY.md` masuk TODO
+- File `docs/RECOVERY.md` wajib selalu diperbarui bila prosedur backup atau restore berubah
 
 ## 14. Cache Strategy Detail
 
@@ -1551,10 +1552,10 @@ Format wajib:
   - File terkait: `bootstrap/app.php`, `routes/web.php`, `routes/auth.php`, `routes/api.php`, `config/cache.php`, `app/Http/Requests/Auth/LoginRequest.php`, `tests/Feature/Auth/AuthenticationTest.php`, `tests/Feature/RateLimitingTest.php`
   - Catatan: Named limiter `public`, `auth-login`, dan `api` sudah aktif; route publik memakai `60 request per menit per IP`, login memakai `10 request per menit per IP`, API foundation memakai `30 request per menit per user atau IP`, dan rate limiter diarahkan ke cache store `file` sebagai fallback shared hosting
 
-- [ ] Implement backup strategy dan dokumentasi recovery
-  - Status: `TODO`
-  - File terkait: `app/Console`, `routes/console.php`, `docs/RECOVERY.md`
-  - Catatan: Backup DB harian, retensi 7 hari, backup media terpisah, dan prosedur restore wajib terdokumentasi
+- [x] Implement backup strategy dan dokumentasi recovery
+  - Status: `DONE`
+  - File terkait: `app/Services/BackupService.php`, `config/backup.php`, `routes/console.php`, `.env.example`, `docs/RECOVERY.md`, `tests/Feature/BackupCommandsTest.php`
+  - Catatan: Backup database harian memakai `mysqldump` via Artisan command, backup media dibuat terpisah sebagai zip, retensi default `7 hari` aktif melalui command prune terjadwal, remote disk opsional tersedia, dan prosedur restore terdokumentasi di `docs/RECOVERY.md`
 
 - [x] Implement views counter buffering
   - Status: `DONE`
@@ -1607,6 +1608,14 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 
 ### 2026-04-07
 
+- Mengimplementasikan backup strategy dasar proyek:
+  - command `backup:database` untuk dump MySQL harian
+  - command `backup:media` untuk arsip zip media publik
+  - command `backup:prune` untuk retensi backup default `7 hari`
+- Menambahkan `BackupService` dan `config/backup.php` untuk pengaturan disk backup lokal, remote opsional, path, timeout, dan jadwal scheduler
+- Menjadwalkan backup database, backup media, dan prune retensi di Laravel Scheduler
+- Menambahkan `docs/RECOVERY.md` berisi prosedur backup manual, restore database, restore media, dan urutan recovery minimum
+- Menambahkan environment example untuk konfigurasi backup dan menambah feature test backup command tanpa ketergantungan DB live
 - Mengimplementasikan rate limiting dasar proyek:
   - limiter `public` untuk route frontend publik dengan batas `60 request per menit per IP`
   - limiter `auth-login` untuk halaman dan submit login dengan batas `10 request per menit per IP`
