@@ -1,5 +1,13 @@
 @csrf
 
+@php
+    $defaultPublishedAt = old(
+        'published_at',
+        $article->published_at?->format('Y-m-d\\TH:i')
+            ?? (! $article->exists ? now()->format('Y-m-d\\TH:i') : null)
+    );
+@endphp
+
 <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_320px]">
     <div class="space-y-6">
         <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
@@ -105,7 +113,7 @@
                 <div>
                     <x-input-label for="published_at" value="Publish At" />
                     <x-text-input id="published_at" name="published_at" type="datetime-local" class="mt-2 block w-full"
-                        :value="old('published_at', $article->published_at?->format('Y-m-d\\TH:i'))" />
+                        :value="$defaultPublishedAt" />
                     <p class="mt-2 text-xs text-stone-500">Jika diisi waktu masa depan lalu klik Publish, artikel akan dijadwalkan otomatis.</p>
                     <x-input-error class="mt-2" :messages="$errors->get('published_at')" />
                 </div>

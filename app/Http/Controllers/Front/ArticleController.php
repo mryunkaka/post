@@ -20,7 +20,7 @@ class ArticleController extends Controller
 
     public function show(string $articleSlug)
     {
-        $article = Article::query()
+        $shareImage = $this->resolveShareImage($article = Article::query()
             ->with([
                 'author:id,name',
                 'category:id,name,slug',
@@ -38,7 +38,7 @@ class ArticleController extends Controller
                     ->oldest(),
             ])
             ->where('slug', $articleSlug)
-            ->firstOrFail();
+            ->firstOrFail());
 
         if ($article->archived_at !== null) {
             throw new GoneHttpException('Artikel ini telah diarsipkan.');
@@ -74,12 +74,26 @@ class ArticleController extends Controller
             'popularArticles' => $popularArticles,
             'commentsEnabled' => $this->commentService->commentsEnabled(),
             'approvedComments' => $article->comments,
-            'metaTitle' => $article->meta_title ?: $article->title,
+            'metaTitle' => $this->buildShareTitle($article),
             'metaDescription' => $this->buildShareDescription($article),
-            'metaImage' => $this->resolveShareImage($article),
+            'metaImage' => $shareImage['url'],
+            'metaImageWidth' => $shareImage['width'],
+            'metaImageHeight' => $shareImage['height'],
+            'metaImageType' => $shareImage['type'],
+            'metaImageAlt' => $article->title,
             'metaType' => 'article',
             'metaUrl' => $article->publicUrl(),
         ]);
+    }
+
+    protected function buildShareTitle(Article $article): string
+    {
+        $title = $article->meta_title ?: $article->title;
+
+        return Str::of($title)
+            ->squish()
+            ->limit(88, '...')
+            ->value();
     }
 
     protected function buildShareDescription(Article $article): string
@@ -87,8 +101,9 @@ class ArticleController extends Controller
         $description = $article->meta_description
             ?: $article->excerpt
             ?: Str::of(strip_tags($article->content))
+                ->replaceMatches('/\s+/', ' ')
                 ->squish()
-                ->limit(220, '...')
+                ->limit(160, '...')
                 ->value();
 
         if ($description === '') {
@@ -101,22 +116,31 @@ class ArticleController extends Controller
                 ! Str::contains($description, ['Baca selengkapnya', 'Selengkapnya']),
                 fn ($text) => $text->append(' Baca selengkapnya di ', config('app.brand_name', config('app.name')), '.')
             )
-            ->limit(220, '...')
+            ->limit(160, '...')
             ->value();
     }
 
-    protected function resolveShareImage(Article $article): ?string
+    /**
+     * @return array{url: string, width: int|null, height: int|null, type: string|null}
+     */
+    protected function resolveShareImage(Article $article): array
     {
         $featuredImage = $article->featuredImageUrl();
 
         if ($featuredImage !== null) {
-            return $featuredImage;
+            return [
+                'url' => $featuredImage,
+                'width' => null,
+                'height' => null,
+                'type' => null,
+            ];
         }
 
-        if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $article->content, $matches) === 1) {
-            return $matches[1];
-        }
-
-        return null;
+        return [
+            'url' => asset('og-default.png'),
+            'width' => 1200,
+            'height' => 630,
+            'type' => 'image/png',
+        ];
     }
 }

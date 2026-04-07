@@ -12,6 +12,10 @@
             $resolvedMetaUrl = $metaUrl ?? url()->current();
             $resolvedMetaType = $metaType ?? 'website';
             $resolvedMetaImage = $metaImage ?? null;
+            $resolvedMetaImageAlt = $metaImageAlt ?? ($pageMetaTitle ?: $siteName);
+            $resolvedMetaImageWidth = $metaImageWidth ?? null;
+            $resolvedMetaImageHeight = $metaImageHeight ?? null;
+            $resolvedMetaImageType = $metaImageType ?? null;
         @endphp
         <meta name="description" content="{{ $resolvedMetaDescription }}">
         <link rel="canonical" href="{{ $resolvedMetaUrl }}">
@@ -24,7 +28,17 @@
 
         @if ($resolvedMetaImage)
             <meta property="og:image" content="{{ $resolvedMetaImage }}">
-            <meta property="og:image:alt" content="{{ $pageMetaTitle ?: $siteName }}">
+            <meta property="og:image:secure_url" content="{{ $resolvedMetaImage }}">
+            <meta property="og:image:alt" content="{{ $resolvedMetaImageAlt }}">
+            @if ($resolvedMetaImageWidth)
+                <meta property="og:image:width" content="{{ $resolvedMetaImageWidth }}">
+            @endif
+            @if ($resolvedMetaImageHeight)
+                <meta property="og:image:height" content="{{ $resolvedMetaImageHeight }}">
+            @endif
+            @if ($resolvedMetaImageType)
+                <meta property="og:image:type" content="{{ $resolvedMetaImageType }}">
+            @endif
             <meta name="twitter:card" content="summary_large_image">
             <meta name="twitter:image" content="{{ $resolvedMetaImage }}">
         @else
