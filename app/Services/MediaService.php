@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MediaPath;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -70,7 +71,9 @@ class MediaService
 
     public function deletePublicFile(?string $path): void
     {
-        if ($path === null || $path === '') {
+        $path = MediaPath::normalize($path);
+
+        if ($path === null) {
             return;
         }
 

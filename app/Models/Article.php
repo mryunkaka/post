@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -93,12 +94,14 @@ class Article extends Model
 
     public function featuredImageUrl(): ?string
     {
-        if ($this->featured_image === null || $this->featured_image === '') {
+        $path = MediaPath::normalize($this->featured_image);
+
+        if ($path === null) {
             return null;
         }
 
         if (Route::has('media.public')) {
-            return route('media.public', ['path' => $this->featured_image]);
+            return route('media.public', ['path' => $path]);
         }
 
         return null;
