@@ -286,6 +286,10 @@ Aturan operasional:
   - sistem harus mencari kandidat berita lain
 - jika jumlah kandidat valid hari itu kurang dari `10`, sistem tidak boleh mengarang sisanya
 - target `10 berita` adalah batas maksimum, bukan kewajiban dengan mengorbankan validitas
+- jika kategori yang tersedia tidak sesuai dengan topik berita:
+  - AI boleh mengusulkan kategori baru
+  - pembuatan kategori baru harus dilakukan via service internal backend
+  - AI dilarang memakai login admin UI, email admin, atau password admin untuk membuat kategori
 
 ### 3.4.3 Sumber AI Editorial
 
@@ -313,6 +317,25 @@ Aturan sumber:
   - wajib memiliki minimal `2` sumber konsisten atau `1` sumber resmi primer
 - sistem tidak boleh menyalin penuh artikel pihak ketiga
 - sistem hanya boleh mengambil fakta, metadata, dan konteks yang diperlukan untuk penulisan ulang yang sah
+
+### 3.4.3.2 Provisioning Kategori oleh AI
+
+Aturan pembuatan kategori baru oleh AI:
+
+- AI tidak boleh login ke panel admin menggunakan kredensial user
+- AI tidak boleh menyimpan atau memakai email dan password admin
+- kategori baru hanya boleh dibuat melalui service internal Laravel yang terkontrol
+- service internal wajib:
+  - mengecek kategori existing berdasarkan nama dan slug
+  - mencegah duplikasi kategori yang sebenarnya sama
+  - membuat slug aman dan unik
+  - memberi nilai default yang konservatif dan mudah diaudit
+
+Prinsip keamanan:
+
+- UI admin tetap dipakai manusia
+- backend service dipakai sistem otomatis
+- semua pembuatan kategori otomatis harus bisa dilacak dalam log atau audit trail ketika modul AI newsroom diimplementasikan penuh
 
 ### 3.4.3.1 Legalitas, Hak Cipta, dan Kepatuhan Hukum
 

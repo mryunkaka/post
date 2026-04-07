@@ -19,6 +19,10 @@
   - judul harus menarik, kreatif, masuk akal, dan tidak clickbait kosong
   - narasi harus mudah dibaca, enak dipahami, tidak membosankan, dan tetap profesional
   - isi artikel wajib nyambung dari awal sampai akhir dan tidak boleh terasa halu, aneh, atau tidak relevan
+- Menambahkan fondasi backend untuk provisioning kategori internal tanpa login admin:
+  - `CategoryProvisionService` dapat mencari kategori existing atau membuat kategori baru secara terkontrol
+  - AI diarahkan memakai service internal backend, bukan email/password admin untuk login ke panel
+  - test unit ditambahkan untuk memastikan resolve existing category dan create category baru berjalan aman
 
 - Memperbarui blok `NEED VERIFICATION` di docs berdasarkan hasil verifikasi lokal: runtime PHP 8.4.11, `pdo_mysql`, `gd`, ketersediaan scheduler command, dan keputusan final editor admin memakai Quill
 - Mengalihkan konfigurasi PHPUnit dari `pdo_sqlite` ke MySQL `media_test` dan menstabilkan test rate limiting agar aman dijalankan berulang
