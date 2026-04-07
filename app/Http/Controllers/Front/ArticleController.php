@@ -74,8 +74,10 @@ class ArticleController extends Controller
             'popularArticles' => $popularArticles,
             'commentsEnabled' => $this->commentService->commentsEnabled(),
             'approvedComments' => $article->comments,
-            'metaTitle' => $this->buildShareTitle($article),
-            'metaDescription' => $this->buildShareDescription($article),
+            'metaTitle' => $article->meta_title ?: $article->title,
+            'metaDescription' => $article->meta_description ?: $article->excerpt,
+            'metaShareTitle' => $this->buildShareTitle($article),
+            'metaShareDescription' => $this->buildShareDescription($article),
             'metaImage' => $shareImage['url'],
             'metaImageWidth' => $shareImage['width'],
             'metaImageHeight' => $shareImage['height'],
@@ -92,7 +94,7 @@ class ArticleController extends Controller
 
         return Str::of($title)
             ->squish()
-            ->limit(88, '...')
+            ->limit(62, '...')
             ->value();
     }
 
@@ -103,7 +105,7 @@ class ArticleController extends Controller
             ?: Str::of(strip_tags($article->content))
                 ->replaceMatches('/\s+/', ' ')
                 ->squish()
-                ->limit(160, '...')
+                ->limit(110, '...')
                 ->value();
 
         if ($description === '') {
@@ -112,11 +114,7 @@ class ArticleController extends Controller
 
         return Str::of($description)
             ->trim()
-            ->when(
-                ! Str::contains($description, ['Baca selengkapnya', 'Selengkapnya']),
-                fn ($text) => $text->append(' Baca selengkapnya di ', config('app.brand_name', config('app.name')), '.')
-            )
-            ->limit(160, '...')
+            ->limit(110, '...')
             ->value();
     }
 

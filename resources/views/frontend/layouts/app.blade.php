@@ -7,8 +7,12 @@
         @php
             $pageMetaTitle = $metaTitle ?? null;
             $pageMetaDescription = $metaDescription ?? null;
+            $shareMetaTitle = $metaShareTitle ?? $pageMetaTitle;
+            $shareMetaDescription = $metaShareDescription ?? $pageMetaDescription;
             $resolvedMetaTitle = $pageMetaTitle ? $pageMetaTitle.' | '.$siteName : $siteName;
             $resolvedMetaDescription = $pageMetaDescription ?: $siteDescription;
+            $resolvedShareMetaTitle = $shareMetaTitle ?: $siteName;
+            $resolvedShareMetaDescription = $shareMetaDescription ?: $resolvedMetaDescription;
             $resolvedMetaUrl = $metaUrl ?? url()->current();
             $resolvedMetaType = $metaType ?? 'website';
             $resolvedMetaImage = $metaImage ?? null;
@@ -22,8 +26,8 @@
 
         <meta property="og:site_name" content="{{ $siteName }}">
         <meta property="og:type" content="{{ $resolvedMetaType }}">
-        <meta property="og:title" content="{{ $resolvedMetaTitle }}">
-        <meta property="og:description" content="{{ $resolvedMetaDescription }}">
+        <meta property="og:title" content="{{ $resolvedShareMetaTitle }}">
+        <meta property="og:description" content="{{ $resolvedShareMetaDescription }}">
         <meta property="og:url" content="{{ $resolvedMetaUrl }}">
 
         @if ($resolvedMetaImage)
@@ -45,8 +49,8 @@
             <meta name="twitter:card" content="summary">
         @endif
 
-        <meta name="twitter:title" content="{{ $resolvedMetaTitle }}">
-        <meta name="twitter:description" content="{{ $resolvedMetaDescription }}">
+        <meta name="twitter:title" content="{{ $resolvedShareMetaTitle }}">
+        <meta name="twitter:description" content="{{ $resolvedShareMetaDescription }}">
 
         <title>{{ $resolvedMetaTitle }}</title>
 
