@@ -1,6 +1,24 @@
 # Project Changelog
 
-## 2026-04-07
+## 2026-04-08
+
+- Menetapkan spesifikasi resmi AI newsroom harian di docs:
+  - provider AI utama `Google Gemini`
+  - model utama `gemini-2.5-flash-lite`
+  - target maksimal `10` draft berita per hari
+  - fokus wilayah Kalimantan Selatan, Tanah Bumbu, dan Kotabaru
+  - AI wajib bekerja dari sumber terverifikasi, menyertakan link sumber, dan tidak boleh auto-publish
+  - draft AI yang terindikasi halu atau tidak valid wajib dibuang lalu kandidat diganti
+  - user/editor diposisikan sebagai validator akhir sebelum publish
+- Menambahkan kebijakan legal sourcing dan atribusi sumber di docs:
+  - hanya sumber legal dan terverifikasi yang boleh dipakai
+  - artikel AI wajib menampilkan nama media sumber dan link langsung ke artikel asal
+  - homepage media tidak boleh dipakai sebagai pengganti link sumber
+  - ringkasan AI tidak boleh menyalin penuh narasi media lain untuk menghindari pelanggaran hak cipta dan sengketa hukum
+- Menambahkan aturan gaya tulis editorial AI di docs:
+  - judul harus menarik, kreatif, masuk akal, dan tidak clickbait kosong
+  - narasi harus mudah dibaca, enak dipahami, tidak membosankan, dan tetap profesional
+  - isi artikel wajib nyambung dari awal sampai akhir dan tidak boleh terasa halu, aneh, atau tidak relevan
 
 - Memperbarui blok `NEED VERIFICATION` di docs berdasarkan hasil verifikasi lokal: runtime PHP 8.4.11, `pdo_mysql`, `gd`, ketersediaan scheduler command, dan keputusan final editor admin memakai Quill
 - Mengalihkan konfigurasi PHPUnit dari `pdo_sqlite` ke MySQL `media_test` dan menstabilkan test rate limiting agar aman dijalankan berulang

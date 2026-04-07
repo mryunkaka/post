@@ -25,7 +25,7 @@
 - Mail system asynchronous dasar sudah diimplementasikan
 - Guest comment policy dan moderation flow dasar sudah diimplementasikan
 - Document status: `ACTIVE`
-- Last updated: `2026-04-07`
+- Last updated: `2026-04-08`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
 
 ## 1. Project Overview
@@ -219,6 +219,230 @@ Aturan wajib:
 - semua output AI harus melalui human review
 - prompt, sumber konteks, dan hasil AI penting harus bisa dicatat bila fitur ini diimplementasikan
 - implementasi AI harus dibungkus service layer agar mudah diganti model/provider
+
+### 3.4.1 Keputusan Model AI Editorial
+
+Keputusan fase implementasi AI editorial:
+
+- provider AI utama: `Google Gemini`
+- model utama: `gemini-2.5-flash-lite`
+- alasan pemilihan:
+  - biaya awal paling efisien untuk batch draft harian
+  - limit gratis harian cukup longgar untuk target `10 draft berita per hari`
+  - mudah dioperasikan via akun Google dan API key server-side
+  - cukup cepat untuk pipeline koleksi, ringkasan, rewrite, dan klasifikasi
+
+Prinsip penggunaan model:
+
+- model AI tidak dianggap sumber fakta
+- model AI dianggap mesin ekstraksi, peringkasan, penulisan ulang, dan klasifikasi editorial
+- semua fakta harus berasal dari sumber terverifikasi yang dikumpulkan sistem
+- model tidak boleh membuat klaim baru yang tidak ada pada sumber
+- model tidak boleh mengarang kutipan, angka, lokasi, jabatan, tanggal, atau identitas narasumber
+
+Fallback model:
+
+- bila kualitas ringkasan berita prioritas tinggi kurang memadai, sistem dapat menambahkan model tingkat lebih tinggi hanya untuk batch terbatas
+- fallback ini opsional dan bukan baseline awal
+
+### 3.4.2 AI Newsroom Daily Pipeline
+
+Target operasional AI newsroom:
+
+- mencari berita fresh setiap hari
+- fokus utama wilayah:
+  - Kalimantan Selatan
+  - Kabupaten Tanah Bumbu
+  - Kabupaten Kotabaru
+- menghasilkan maksimal `10 draft berita per hari`
+- semua judul, slug, dan narasi wajib berbeda dari artikel yang sudah ada
+- user hanya melakukan review cepat dan publish bila sesuai
+
+Urutan pipeline wajib:
+
+1. `source collect`
+2. `candidate filter`
+3. `fact extraction`
+4. `deduplication`
+5. `image matching`
+6. `draft generation`
+7. `self-validation`
+8. `human review`
+9. `publish manual`
+
+Aturan operasional:
+
+- sistem hanya mengambil kandidat berita dari whitelist sumber legal dan terverifikasi
+- sistem harus menyimpan:
+  - nama sumber
+  - URL sumber
+  - tanggal publikasi sumber
+  - ringkasan fakta mentah
+  - lokasi berita
+  - daftar sumber pendukung bila ada
+- jika hasil validasi internal menilai draft berpotensi halu atau fakta tidak konsisten:
+  - draft tidak boleh disimpan ke artikel final
+  - kandidat harus dibuang atau ditandai gagal
+  - sistem harus mencari kandidat berita lain
+- jika jumlah kandidat valid hari itu kurang dari `10`, sistem tidak boleh mengarang sisanya
+- target `10 berita` adalah batas maksimum, bukan kewajiban dengan mengorbankan validitas
+
+### 3.4.3 Sumber AI Editorial
+
+Sumber awal yang diprioritaskan:
+
+- portal resmi pemerintah daerah
+- media center pemerintah daerah
+- kantor berita resmi atau regional tepercaya
+- sumber statistik resmi seperti BPS atau BMKG bila diperlukan untuk data pendukung
+
+Prioritas wilayah:
+
+1. Kotabaru
+2. Tanah Bumbu
+3. Kalimantan Selatan umum
+
+Aturan sumber:
+
+- setiap draft wajib menyertakan minimal `1` URL sumber utama
+- setiap artikel publik hasil AI wajib menampilkan atribusi sumber secara jelas:
+  - nama media atau nama institusi sumber
+  - link langsung ke artikel sumber
+  - link sumber harus menuju halaman berita asal, bukan homepage media
+- untuk berita yang memuat angka penting, kebijakan, korban, kriminal, bencana, atau klaim sensitif:
+  - wajib memiliki minimal `2` sumber konsisten atau `1` sumber resmi primer
+- sistem tidak boleh menyalin penuh artikel pihak ketiga
+- sistem hanya boleh mengambil fakta, metadata, dan konteks yang diperlukan untuk penulisan ulang yang sah
+
+### 3.4.3.1 Legalitas, Hak Cipta, dan Kepatuhan Hukum
+
+Aturan legal wajib:
+
+- sistem hanya boleh menggunakan sumber yang legal diakses publik
+- sistem tidak boleh mengambil konten dari sumber yang secara eksplisit melarang scraping, crawling, atau reproduksi konten bila izin tidak tersedia
+- sistem tidak boleh menyalin penuh narasi, paragraf, atau struktur artikel pihak lain secara substantif
+- sistem hanya boleh membuat artikel baru berbasis:
+  - fakta yang terverifikasi
+  - ringkasan peristiwa
+  - sintesis lintas sumber
+  - atribusi sumber yang jelas
+- sistem tidak boleh menghapus identitas sumber asli untuk menyesatkan pembaca seolah berita adalah hasil peliputan lapangan internal bila bukan demikian
+- sistem wajib menghindari pelanggaran hak cipta, pelanggaran terms of service, dan praktik yang berpotensi memicu sengketa hukum media
+
+Aturan atribusi publik:
+
+- nama media sumber wajib tampil jelas pada artikel atau blok sumber
+- link wajib menuju artikel sumber yang spesifik
+- dilarang memakai link ke homepage sumber sebagai pengganti artikel asli
+- jika ada lebih dari satu sumber penting, sistem harus menyimpan dan mampu menampilkan lebih dari satu referensi sumber
+
+Aturan redaksional untuk menghindari pelanggaran:
+
+- jangan gunakan frasa yang menyesatkan seolah redaksi hadir langsung di lokasi jika sumber hanya berasal dari media lain
+- jika artikel merupakan rangkuman dari beberapa sumber, nyatakan bahwa artikel disusun dari sumber terverifikasi
+- jika legalitas pemakaian gambar sumber tidak jelas, jangan gunakan gambar tersebut
+- jika legalitas narasi atau data meragukan, kandidat berita harus dibatalkan
+
+### 3.4.4 Aturan Anti Halusinasi AI
+
+Model harus diarahkan menjadi asisten wartawan profesional, bukan generator teks bebas.
+
+Aturan prompt dan guardrail wajib:
+
+- fokus pada fakta yang benar-benar ada di sumber
+- tulis dengan bahasa profesional, ringkas, mudah dipahami, dan enak dibaca
+- jangan menambah opini pribadi model
+- jangan menulis seolah hadir di lapangan jika sumber tidak menyatakan demikian
+- jangan menulis kutipan langsung jika kutipan tidak tersedia eksplisit di sumber
+- jika data kurang:
+  - tandai `insufficient source evidence`
+  - jangan paksa menjadi draft siap publish
+- jika terjadi konflik fakta antar sumber:
+  - pilih sumber resmi primer
+  - jika konflik belum selesai, turunkan ke status review internal dengan catatan konflik
+
+### 3.4.4.1 Aturan Gaya Tulis AI Editorial
+
+Tujuan gaya penulisan:
+
+- judul menarik dan kuat
+- isi artikel mudah dibaca
+- alur narasi tidak membosankan
+- pembaca merasa penasaran untuk lanjut membaca
+- tetap profesional, masuk akal, dan tidak berlebihan
+
+Aturan judul:
+
+- judul harus menarik, jelas, dan relevan dengan fakta utama
+- judul boleh kreatif, tetapi tidak boleh clickbait kosong
+- judul tidak boleh menjanjikan hal yang tidak dibahas di isi artikel
+- judul harus membantu meningkatkan rasa ingin tahu pembaca tanpa menipu
+- judul wajib berbeda dari artikel lain yang sudah ada
+
+Aturan narasi:
+
+- paragraf pembuka harus cepat menjelaskan inti peristiwa
+- isi artikel harus mengalir logis dari pembuka, detail utama, konteks, hingga penutup
+- bahasa harus sederhana, natural, profesional, dan mudah dipahami pembaca umum
+- narasi tidak boleh kaku seperti laporan mesin
+- narasi tidak boleh berputar-putar, repetitif, atau terasa membosankan
+- artikel harus tetap informatif dan tidak berubah menjadi opini liar atau sensasi berlebihan
+
+Aturan koherensi isi:
+
+- isi artikel wajib nyambung dengan judul
+- setiap paragraf harus mendukung topik utama
+- tidak boleh ada bagian yang terasa loncat, aneh, atau tidak relevan
+- tidak boleh ada kesimpulan yang tidak didukung data
+- jika fakta yang tersedia terbatas, artikel harus tetap jujur pada batas data tersebut
+
+Checklist kualitas editorial AI:
+
+- apakah judul cukup menarik tanpa menipu
+- apakah lead menjelaskan inti berita dengan cepat
+- apakah isi artikel enak dibaca dan mudah dipahami
+- apakah isi artikel konsisten dari awal sampai akhir
+- apakah tidak ada bagian halu, aneh, atau tidak nyambung
+- apakah artikel terasa seperti ditulis wartawan profesional, bukan generator teks acak
+
+Sistem validasi internal minimal harus memeriksa:
+
+- kesesuaian tanggal
+- kesesuaian lokasi
+- kesesuaian tokoh dan jabatan
+- konsistensi angka
+- keberadaan URL sumber
+- kemiripan dengan artikel lama agar tidak duplikat
+
+### 3.4.5 Gambar AI Editorial
+
+Aturan gambar berita:
+
+- AI tidak boleh membuat gambar palsu untuk berita faktual
+- AI hanya boleh memilih atau mencocokkan gambar yang benar-benar relevan dengan berita
+- gambar utama diprioritaskan dari:
+  - featured image sumber yang legal dipakai
+  - media internal redaksi
+  - dokumentasi resmi lembaga terkait
+- jika tidak ada gambar valid:
+  - artikel tetap boleh menjadi draft tanpa gambar
+  - sistem tidak boleh mengarang foto peristiwa
+
+### 3.4.6 Limit dan Kuota Internal
+
+Target baseline harian:
+
+- `10` draft berita per hari
+- limit panggilan AI internal direkomendasikan:
+  - `MAX_AI_DRAFTS_PER_DAY=10`
+  - `MAX_AI_CALLS_PER_DAY=100`
+
+Prinsip limit:
+
+- sistem harus berhenti sebelum mendekati limit provider harian
+- sistem harus mencatat pemakaian harian per tanggal
+- reset kuota internal mengikuti hari server
+- scheduler AI harian dijalankan pada jam tetap, bukan loop tanpa batas
 
 ### 3.5 Mail System
 
@@ -1318,6 +1542,12 @@ Fungsi:
 - generate judul alternatif
 - generate excerpt
 - generate meta description
+- generate draft berita harian dari kandidat sumber terverifikasi
+- merangkum banyak sumber menjadi satu narasi profesional yang ringkas dan mudah dipahami
+- memilih gambar berita yang relevan dan legal bila tersedia
+- menyimpan daftar link sumber untuk bahan review editor
+- membuat judul yang menarik, masuk akal, dan mendorong rasa ingin tahu pembaca tanpa clickbait palsu
+- menulis narasi yang enak dibaca, tidak membosankan, dan tetap nyambung dari awal sampai akhir
 
 Batasan:
 
@@ -1325,6 +1555,13 @@ Batasan:
 - output AI wajib masuk `draft` atau `review`
 - wajib ada human review
 - prompt dan sumber konteks penting sebaiknya tercatat
+- AI tidak boleh dianggap benar tanpa validasi sumber
+- AI tidak boleh mengarang fakta lapangan
+- AI tidak boleh mengarang foto peristiwa
+- jika draft terindikasi halu atau tidak valid, draft harus dibuang dan sistem mencari kandidat baru
+- artikel AI wajib menyertakan nama media dan link langsung ke artikel sumber
+- dilarang menggunakan homepage media sebagai pengganti link sumber berita
+- artikel AI tidak boleh terasa aneh, kaku, tidak nyambung, atau seperti teks acak
 
 ### 16.2 Scraping Legal Only
 
@@ -1337,6 +1574,8 @@ Aturan keras:
 - hanya ambil ringkasan, metadata, dan sumber
 - jangan salin penuh artikel pihak lain
 - selalu simpan URL sumber
+- simpan juga nama media sumber
+- tampilkan link langsung ke artikel sumber, bukan ke homepage media
 - hasil scraping tidak boleh auto-publish
 - semua hasil masuk ke review internal
 
@@ -1497,10 +1736,10 @@ Format wajib:
   - File terkait: `routes`, `resources/views`
   - Catatan: Tidak ada implementasi AMP aktif dan feature flag masih `off`; keputusan tetap menunggu validasi bisnis/distribusi trafik
 
-- [ ] Verifikasi pendekatan AI Laravel 13 yang paling sesuai untuk hosting target
-  - Status: `NEED VERIFICATION`
-  - File terkait: `app/Services/AI`
-  - Catatan: Belum ada modul AI aktif; keputusan masih menunggu validasi provider, biaya operasional, dan batasan hosting target
+- [x] Menetapkan pendekatan AI editorial untuk fase otomatisasi draft berita
+  - Status: `DONE`
+  - File terkait: `docs/PROJECT_MASTER_DOC.md`, `app/Services/AI`
+  - Catatan: Keputusan arsitektur ditetapkan memakai provider `Google Gemini` dengan model utama `gemini-2.5-flash-lite`; AI newsroom hanya boleh membuat kandidat dan draft berbasis sumber terverifikasi, tidak boleh auto-publish, dan user tetap menjadi reviewer akhir
 
 - [ ] Verifikasi mekanisme scheduler dan cron di hosting target
   - Status: `NEED VERIFICATION`
