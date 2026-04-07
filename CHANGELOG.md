@@ -32,6 +32,11 @@
   - scheduler `news:generate-drafts` diubah menjadi setiap 1 jam
   - draft AI otomatis membawa `image_url` kandidat sebagai featured image bila sumber menyediakannya
   - artikel kini mendukung featured image dari URL eksternal agar draft sumber nasional tetap menampilkan gambar tanpa upload manual
+- Menambahkan panel kontrol AI di halaman `Kandidat AI`:
+  - tombol `Ambil Kandidat AI` dan `Generate Draft AI` langsung dari admin
+  - loading overlay, progress bar, dan teks status proses
+  - ringkasan hasil ingest dan generate ditampilkan di panel
+  - helper URL cron dan limit proses ditampilkan agar mudah dipakai di shared hosting
   - unit test ditambahkan untuk registry sumber dan penyimpanan kandidat berita
 - Menambahkan validasi kandidat berita AI dan halaman review admin:
   - `NewsCandidateValidationService` menolak kandidat stale, minim data, link sumber tidak layak, atau duplikat dengan berita published

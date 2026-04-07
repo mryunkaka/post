@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\NewsCandidate;
+use App\Services\NewsIngestionService;
 use App\Services\NewsCandidateValidationService;
 use App\Services\NewsDraftGenerationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -16,6 +18,7 @@ class NewsCandidateController extends Controller
     public function __construct(
         protected NewsCandidateValidationService $validationService,
         protected NewsDraftGenerationService $draftGenerationService,
+        protected NewsIngestionService $ingestionService,
     ) {}
 
     public function index(Request $request): View
@@ -39,6 +42,41 @@ class NewsCandidateController extends Controller
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'availableRegions' => config('ai_editorial.regions.priority', []),
+            'defaultIngestLimit' => (int) config('ai_editorial.ingest.default_limit', 30),
+            'defaultGenerateLimit' => (int) config('ai_editorial.generation.default_limit', 10),
+            'cronScheduleUrl' => url('/artisan-runner.php').'?token='.urlencode((string) env('ARTISAN_WEB_TOKEN', '')).'&cmd=schedule-run',
+            'cronIngestUrlTemplate' => url('/artisan-runner.php').'?token='.urlencode((string) env('ARTISAN_WEB_TOKEN', '')).'&cmd=news-ingest&limit=__LIMIT__',
+            'cronGenerateUrlTemplate' => url('/artisan-runner.php').'?token='.urlencode((string) env('ARTISAN_WEB_TOKEN', '')).'&cmd=news-generate-drafts&limit=__LIMIT__',
+        ]);
+    }
+
+    public function runIngest(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'limit' => ['required', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $summary = $this->ingestionService->ingest(null, (int) $validated['limit']);
+
+        return response()->json([
+            'message' => 'Ingest kandidat AI selesai.',
+            'stage' => 'Ingest selesai',
+            'summary' => $summary,
+        ]);
+    }
+
+    public function runGenerateDrafts(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'limit' => ['required', 'integer', 'min:1', 'max:30'],
+        ]);
+
+        $summary = $this->draftGenerationService->generatePendingDrafts((int) $validated['limit']);
+
+        return response()->json([
+            'message' => 'Generate draft AI selesai.',
+            'stage' => 'Generate draft selesai',
+            'summary' => $summary,
         ]);
     }
 

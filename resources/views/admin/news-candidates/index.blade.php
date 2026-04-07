@@ -10,13 +10,93 @@
         $actionButtonBase = 'inline-flex h-9 w-9 items-center justify-center rounded-full border transition';
     @endphp
 
-    <div class="py-10">
+    <div
+        class="py-10"
+        x-data="newsCandidateRunner({
+            ingestUrl: '{{ route('admin.news-candidates.run-ingest') }}',
+            generateUrl: '{{ route('admin.news-candidates.run-generate-drafts') }}',
+            ingestLimit: {{ $defaultIngestLimit }},
+            generateLimit: {{ $defaultGenerateLimit }},
+            cronScheduleUrl: @js($cronScheduleUrl),
+            cronIngestUrlTemplate: @js($cronIngestUrlTemplate),
+            cronGenerateUrlTemplate: @js($cronGenerateUrlTemplate),
+        })"
+    >
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('status'))
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
                     {{ session('status') }}
                 </div>
             @endif
+
+            <section class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600">Runner AI</p>
+                            <h3 class="mt-2 text-xl font-semibold text-stone-900">Jalankan kandidat dan draft langsung dari panel</h3>
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <label class="block">
+                                <span class="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Limit Ingest</span>
+                                <input x-model.number="ingestLimit" type="number" min="1" max="100" class="mt-2 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm text-stone-700 focus:border-stone-900 focus:outline-none focus:ring-0" />
+                            </label>
+                            <label class="block">
+                                <span class="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Limit Draft</span>
+                                <input x-model.number="generateLimit" type="number" min="1" max="30" class="mt-2 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm text-stone-700 focus:border-stone-900 focus:outline-none focus:ring-0" />
+                            </label>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button @click="runIngest()" type="button" class="inline-flex h-12 items-center rounded-full border border-stone-950 bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800">
+                                Ambil Kandidat AI
+                            </button>
+                            <button @click="runGenerateDrafts()" type="button" class="inline-flex h-12 items-center rounded-full border border-amber-600 bg-amber-600 px-5 text-sm font-semibold text-white transition hover:bg-amber-500">
+                                Generate Draft AI
+                            </button>
+                        </div>
+
+                        <div class="rounded-2xl bg-stone-50 p-4 text-sm text-stone-700">
+                            <p class="font-semibold text-stone-900" x-text="statusTitle"></p>
+                            <p class="mt-2" x-text="statusMessage"></p>
+                            <template x-if="lastSummary">
+                                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                                    <template x-for="item in lastSummary" :key="item.label">
+                                        <div class="rounded-2xl bg-white px-4 py-3 shadow-[inset_0_0_0_1px_rgba(231,229,228,1)]">
+                                            <p class="text-xs uppercase tracking-[0.18em] text-stone-500" x-text="item.label"></p>
+                                            <p class="mt-1 text-lg font-semibold text-stone-900" x-text="item.value"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Helper Cron</p>
+                            <h3 class="mt-2 text-lg font-semibold text-stone-900">URL dan limit untuk shared hosting</h3>
+                        </div>
+
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <p class="font-semibold text-stone-900">Cron utama</p>
+                                <p class="mt-1 text-stone-600">Panggil `schedule-run` via cron tiap 5 menit.</p>
+                                <input type="text" :value="cronScheduleUrl" readonly class="mt-2 w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-xs text-stone-700" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-stone-900">Cron ingest manual</p>
+                                <input type="text" :value="cronIngestUrl" readonly class="mt-2 w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-xs text-stone-700" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-stone-900">Cron generate manual</p>
+                                <input type="text" :value="cronGenerateUrl" readonly class="mt-2 w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-xs text-stone-700" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <form method="GET" action="{{ route('admin.news-candidates.index') }}" class="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
                 <div class="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_180px_200px_180px_180px_auto]">
@@ -238,5 +318,171 @@
 
             @include('admin.partials.pagination', ['paginator' => $candidates])
         </div>
+
+        <div x-cloak x-show="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/65 px-4">
+            <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+                <p class="text-xs font-semibold uppercase tracking-[0.26em] text-amber-600">AI Process</p>
+                <h3 class="mt-2 text-2xl font-semibold text-stone-900" x-text="loadingTitle"></h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600" x-text="loadingStage"></p>
+
+                <div class="mt-5 h-3 overflow-hidden rounded-full bg-stone-200">
+                    <div class="h-full rounded-full bg-amber-500 transition-all duration-500" :style="`width: ${progress}%`"></div>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between text-sm text-stone-500">
+                    <span x-text="`${progress}%`"></span>
+                    <span x-text="loadingDetail"></span>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        function newsCandidateRunner(config) {
+            return {
+                ingestUrl: config.ingestUrl,
+                generateUrl: config.generateUrl,
+                ingestLimit: config.ingestLimit,
+                generateLimit: config.generateLimit,
+                cronScheduleUrl: config.cronScheduleUrl,
+                cronIngestUrlTemplate: config.cronIngestUrlTemplate,
+                cronGenerateUrlTemplate: config.cronGenerateUrlTemplate,
+                loading: false,
+                progress: 0,
+                loadingTitle: 'Memulai proses',
+                loadingStage: 'Menyiapkan permintaan...',
+                loadingDetail: 'Mohon tunggu',
+                statusTitle: 'Belum ada proses dijalankan',
+                statusMessage: 'Gunakan tombol di atas untuk ambil kandidat baru atau membuat draft AI.',
+                lastSummary: null,
+                timer: null,
+
+                get cronIngestUrl() {
+                    return this.cronIngestUrlTemplate.replace('__LIMIT__', String(this.ingestLimit || 30));
+                },
+
+                get cronGenerateUrl() {
+                    return this.cronGenerateUrlTemplate.replace('__LIMIT__', String(this.generateLimit || 10));
+                },
+
+                startLoading(title, stages) {
+                    this.loading = true;
+                    this.progress = 8;
+                    this.loadingTitle = title;
+                    this.loadingStage = stages[0] ?? 'Menyiapkan proses...';
+                    this.loadingDetail = 'Menghubungi server';
+
+                    let stageIndex = 0;
+                    clearInterval(this.timer);
+                    this.timer = setInterval(() => {
+                        if (this.progress < 88) {
+                            this.progress += 8;
+                        }
+
+                        if (stageIndex < stages.length - 1) {
+                            stageIndex += 1;
+                            this.loadingStage = stages[stageIndex];
+                        }
+                    }, 1100);
+                },
+
+                finishLoading(detail) {
+                    clearInterval(this.timer);
+                    this.progress = 100;
+                    this.loadingDetail = detail;
+
+                    window.setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+
+                failLoading(message) {
+                    clearInterval(this.timer);
+                    this.loadingTitle = 'Proses gagal';
+                    this.loadingStage = message;
+                    this.loadingDetail = 'Periksa konfigurasi atau coba lagi';
+                    this.progress = 100;
+
+                    window.setTimeout(() => {
+                        this.loading = false;
+                    }, 1400);
+                },
+
+                async postJson(url, payload) {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                        },
+                        body: JSON.stringify(payload),
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+
+                    if (! response.ok) {
+                        throw new Error(data.message || 'Request gagal diproses.');
+                    }
+
+                    return data;
+                },
+
+                async runIngest() {
+                    this.startLoading('Mengambil Kandidat AI', [
+                        'Menyiapkan source registry...',
+                        'Mengambil feed dan artikel kandidat...',
+                        'Menyimpan kandidat ke database...',
+                        'Memvalidasi kandidat berita...',
+                    ]);
+
+                    try {
+                        const data = await this.postJson(this.ingestUrl, { limit: this.ingestLimit });
+
+                        this.statusTitle = 'Ingest kandidat selesai';
+                        this.statusMessage = `${data.summary.sources} sumber diproses, ${data.summary.fetched} item diambil, ${data.summary.stored} kandidat disimpan.`;
+                        this.lastSummary = [
+                            { label: 'Sumber', value: data.summary.sources },
+                            { label: 'Fetched', value: data.summary.fetched },
+                            { label: 'Stored', value: data.summary.stored },
+                            { label: 'Validated', value: data.summary.validated },
+                            { label: 'Rejected', value: data.summary.rejected },
+                        ];
+
+                        this.finishLoading(`${data.summary.validated} kandidat lolos validasi`);
+                        window.setTimeout(() => window.location.reload(), 700);
+                    } catch (error) {
+                        this.failLoading(error.message);
+                    }
+                },
+
+                async runGenerateDrafts() {
+                    this.startLoading('Membuat Draft AI', [
+                        'Mengambil kandidat tervalidasi...',
+                        'Menggabungkan sumber berita terkait...',
+                        'Meminta model AI menulis draft...',
+                        'Menyimpan artikel draft dan sumber rujukan...',
+                    ]);
+
+                    try {
+                        const data = await this.postJson(this.generateUrl, { limit: this.generateLimit });
+
+                        this.statusTitle = 'Generate draft selesai';
+                        this.statusMessage = `${data.summary.processed} kandidat tervalidasi diproses dan ${data.summary.drafted} draft berhasil dibuat.`;
+                        this.lastSummary = [
+                            { label: 'Processed', value: data.summary.processed },
+                            { label: 'Drafted', value: data.summary.drafted },
+                            { label: 'Failed', value: data.summary.failed },
+                        ];
+
+                        this.finishLoading(`${data.summary.drafted} draft berhasil dibuat`);
+                        window.setTimeout(() => window.location.reload(), 700);
+                    } catch (error) {
+                        this.failLoading(error.message);
+                    }
+                },
+            };
+        }
+    </script>
 </x-app-layout>

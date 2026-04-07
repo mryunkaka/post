@@ -35,6 +35,8 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
             Route::patch('comments/{comment}/spam', [CommentController::class, 'spam'])->name('comments.spam');
             Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
             Route::get('news-candidates', [NewsCandidateController::class, 'index'])->name('news-candidates.index');
+            Route::post('news-candidates/run-ingest', [NewsCandidateController::class, 'runIngest'])->name('news-candidates.run-ingest');
+            Route::post('news-candidates/run-generate-drafts', [NewsCandidateController::class, 'runGenerateDrafts'])->name('news-candidates.run-generate-drafts');
             Route::post('news-candidates/bulk', [NewsCandidateController::class, 'bulk'])->name('news-candidates.bulk');
             Route::patch('news-candidates/{newsCandidate}/validate', [NewsCandidateController::class, 'validateCandidate'])->name('news-candidates.validate');
             Route::patch('news-candidates/{newsCandidate}/reject', [NewsCandidateController::class, 'reject'])->name('news-candidates.reject');
