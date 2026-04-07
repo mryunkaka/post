@@ -46,6 +46,7 @@
 - Menyinkronkan [docs/MANUAL_DATABASE_SCHEMA.sql] agar shared hosting tanpa SSH dapat membuat tabel `news_candidates` via phpMyAdmin
 - Menambahkan [docs/MANUAL_DATABASE_UPDATES.sql] untuk update incremental phpMyAdmin pada database existing agar tidak gagal karena tabel sudah ada
 - Memperluas `public/artisan-runner.php` untuk shared hosting agar dapat menjalankan `news:ingest`, `news:generate-drafts`, dan `schedule:run` via token web
+- Menambahkan deteksi `ARTISAN_PHP_BINARY` di `artisan-runner.php` agar shared hosting cPanel bisa memakai PHP CLI yang benar, bukan binary CGI
 - Merapikan sinkronisasi dokumentasi proyek:
   - memperbarui status backlog di `docs/PROJECT_MASTER_DOC.md`
   - menyelaraskan catatan admin panel minimal dengan modul yang sudah aktif

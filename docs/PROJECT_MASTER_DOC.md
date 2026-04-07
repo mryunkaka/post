@@ -1268,6 +1268,11 @@ Approval flow wajib jelas karena ini inti operasi redaksi.
   - scheduled publishing tidak bisa digunakan
   - fitur ini harus didisable dari UI admin
   - fallback baseline proyek ini: `public/artisan-runner.php` dengan `ARTISAN_WEB_TOKEN`
+  - jika `/usr/bin/php` di hosting ternyata mengarah ke CGI dan bukan CLI, set `ARTISAN_PHP_BINARY` di `.env`
+  - contoh path yang sering valid di cPanel:
+    - `/usr/local/bin/php`
+    - `/opt/cpanel/ea-php84/root/usr/bin/php`
+    - `/usr/bin/ea-php84`
   - command yang aman untuk AI newsroom:
     - `news-ingest`
     - `news-generate-drafts`

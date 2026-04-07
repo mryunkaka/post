@@ -26,7 +26,6 @@ header('Content-Type: text/plain; charset=UTF-8');
 $projectRoot = dirname(__DIR__);
 $envPath = $projectRoot . DIRECTORY_SEPARATOR . '.env';
 $artisanPath = $projectRoot . DIRECTORY_SEPARATOR . 'artisan';
-$phpBinary = '/usr/bin/php';
 
 if (!is_file($envPath)) {
     http_response_code(500);
@@ -36,11 +35,6 @@ if (!is_file($envPath)) {
 if (!is_file($artisanPath)) {
     http_response_code(500);
     exit("artisan file not found.\n");
-}
-
-if (!is_executable($phpBinary)) {
-    http_response_code(500);
-    exit("/usr/bin/php is not executable or not available.\n");
 }
 
 /**
@@ -79,6 +73,38 @@ function readEnvValue(string $path, string $key): ?string
     }
 
     return null;
+}
+
+function detectPhpBinary(string $envPath): ?string
+{
+    $configured = readEnvValue($envPath, 'ARTISAN_PHP_BINARY');
+
+    $candidates = array_filter([
+        $configured,
+        '/usr/local/bin/php',
+        '/opt/cpanel/ea-php84/root/usr/bin/php',
+        '/opt/cpanel/ea-php83/root/usr/bin/php',
+        '/opt/cpanel/ea-php82/root/usr/bin/php',
+        '/usr/bin/ea-php84',
+        '/usr/bin/ea-php83',
+        '/usr/bin/ea-php82',
+        '/usr/bin/php',
+    ]);
+
+    foreach ($candidates as $candidate) {
+        if (is_string($candidate) && $candidate !== '' && is_file($candidate) && is_executable($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return null;
+}
+
+$phpBinary = detectPhpBinary($envPath);
+
+if ($phpBinary === null) {
+    http_response_code(500);
+    exit("No executable PHP CLI binary found. Set ARTISAN_PHP_BINARY in .env.\n");
 }
 
 $expectedToken = readEnvValue($envPath, 'ARTISAN_WEB_TOKEN');
@@ -155,9 +181,10 @@ if ($cmdKey === 'news-ingest') {
 }
 
 $shellCommand = sprintf(
-    'cd %s && %s artisan %s 2>&1',
+    'cd %s && %s %s %s 2>&1',
     escapeshellarg($projectRoot),
     escapeshellarg($phpBinary),
+    escapeshellarg($artisanPath),
     $artisanCommand
 );
 
