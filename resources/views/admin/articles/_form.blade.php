@@ -68,7 +68,7 @@
                     @endif
                     <input id="featured_image" name="featured_image" type="file" accept=".jpg,.jpeg,.png,.webp"
                         class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-700 shadow-sm file:mr-4 file:rounded-full file:border-0 file:bg-stone-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-stone-700">
-                    <p class="mt-2 text-xs text-stone-500">Format: JPG, PNG, atau WebP. File besar akan dikompres otomatis ke WebP agar ukuran penyimpanan tetap kecil sambil menjaga kualitas baca gambar.</p>
+                    <p class="mt-2 text-xs text-stone-500">Format: JPG, PNG, atau WebP. Upload akan dibuat menjadi WebP untuk situs dan JPG share untuk WhatsApp/Facebook, keduanya dikompres agar tetap hemat storage.</p>
                     <x-input-error class="mt-2" :messages="$errors->get('featured_image')" />
                 </div>
 

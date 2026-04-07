@@ -18,8 +18,11 @@ class MediaServiceTest extends TestCase
 
         $file = UploadedFile::fake()->image('featured.jpg', 1800, 1200);
         $path = app(MediaService::class)->storeArticleFeaturedImage($file);
+        $sharePath = \App\Support\MediaPath::shareVariant($path);
 
         $this->assertStringEndsWith('.webp', $path);
         Storage::disk('public')->assertExists($path);
+        $this->assertNotNull($sharePath);
+        Storage::disk('public')->assertExists($sharePath);
     }
 }

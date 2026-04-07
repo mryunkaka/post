@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 class Article extends Model
 {
@@ -105,5 +106,16 @@ class Article extends Model
         }
 
         return null;
+    }
+
+    public function shareImageUrl(): ?string
+    {
+        $sharePath = MediaPath::shareVariant($this->featured_image);
+
+        if ($sharePath !== null && Storage::disk('public')->exists($sharePath) && Route::has('media.public')) {
+            return route('media.public', ['path' => $sharePath]);
+        }
+
+        return $this->featuredImageUrl();
     }
 }

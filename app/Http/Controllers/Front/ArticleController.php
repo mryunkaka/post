@@ -123,14 +123,14 @@ class ArticleController extends Controller
      */
     protected function resolveShareImage(Article $article): array
     {
-        $featuredImage = $article->featuredImageUrl();
+        $featuredImage = $article->shareImageUrl();
 
         if ($featuredImage !== null) {
             return [
                 'url' => $featuredImage,
-                'width' => null,
-                'height' => null,
-                'type' => null,
+                'width' => 1200,
+                'height' => 630,
+                'type' => str_ends_with($featuredImage, '.jpg') ? 'image/jpeg' : null,
             ];
         }
 
