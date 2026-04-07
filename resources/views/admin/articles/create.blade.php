@@ -1,10 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600">Artikel Baru</p>
-            <h2 class="mt-2 text-2xl font-semibold leading-tight text-stone-900">
-                Tulis Draft Redaksi
-            </h2>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600">Artikel Baru</p>
+                <h2 class="mt-2 text-2xl font-semibold leading-tight text-stone-900">
+                    Tulis Draft Redaksi
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                data-clear-local-draft="admin-article-create"
+                class="inline-flex items-center rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-rose-500 hover:text-rose-700"
+            >
+                Clear Draft
+            </button>
         </div>
     </x-slot>
 

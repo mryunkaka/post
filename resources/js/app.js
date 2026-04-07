@@ -8,6 +8,8 @@ window.Alpine = Alpine;
 window.Quill = Quill;
 
 document.addEventListener('DOMContentLoaded', () => {
+    const quillRegistry = new Map();
+
     document.querySelectorAll('form[data-local-draft]').forEach((form) => {
         const storageKey = `todaksiring:${form.getAttribute('data-local-draft')}`;
         const draftFields = Array.from(
@@ -110,6 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
             quill.clipboard.dangerouslyPasteHTML(initialHtml);
         }
 
+        if (input.name) {
+            quillRegistry.set(input.name, quill);
+        }
+
         quill.on('text-change', () => {
             input.value = quill.root.innerHTML === '<p><br></p>' ? '' : quill.root.innerHTML;
             input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -119,6 +125,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
         form?.addEventListener('submit', () => {
             input.value = quill.root.innerHTML === '<p><br></p>' ? '' : quill.root.innerHTML;
+        });
+    });
+
+    document.querySelectorAll('[data-clear-local-draft]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const draftKey = button.getAttribute('data-clear-local-draft');
+
+            if (! draftKey) {
+                return;
+            }
+
+            const form = document.querySelector(`form[data-local-draft="${draftKey}"]`);
+
+            if (! form) {
+                return;
+            }
+
+            window.localStorage.removeItem(`todaksiring:${draftKey}`);
+            form.reset();
+
+            form.querySelectorAll('input[name], textarea[name], select[name]').forEach((field) => {
+                if (field.type === 'hidden') {
+                    return;
+                }
+
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    field.checked = field.defaultChecked;
+                    return;
+                }
+
+                field.value = field.defaultValue ?? '';
+            });
+
+            form.querySelectorAll('[data-rich-editor]').forEach((element) => {
+                const inputId = element.getAttribute('data-input');
+                const input = inputId ? document.getElementById(inputId) : null;
+
+                if (! input || ! input.name) {
+                    return;
+                }
+
+                const quill = quillRegistry.get(input.name);
+
+                input.value = input.defaultValue ?? '';
+
+                if (quill) {
+                    quill.setContents([]);
+
+                    if (input.value.trim() !== '') {
+                        quill.clipboard.dangerouslyPasteHTML(input.value);
+                    }
+                }
+            });
         });
     });
 });
