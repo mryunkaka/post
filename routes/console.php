@@ -76,5 +76,5 @@ Schedule::command('news:ingest --limit='.((int) config('ai_editorial.ingest.defa
     ->everyThirtyMinutes()
     ->when(fn (): bool => (bool) config('ai_editorial.ingest_enabled', false));
 Schedule::command('news:generate-drafts --limit='.((int) config('ai_editorial.generation.default_limit', 10)))
-    ->dailyAt('05:10')
+    ->hourly()
     ->when(fn (): bool => (bool) config('ai_editorial.enabled', false));

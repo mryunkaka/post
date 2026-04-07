@@ -99,6 +99,10 @@ class Article extends Model
 
     public function featuredImageUrl(): ?string
     {
+        if (MediaPath::isExternalUrl($this->featured_image)) {
+            return trim((string) $this->featured_image);
+        }
+
         $path = MediaPath::normalize($this->featured_image);
 
         if ($path === null) {
@@ -114,6 +118,10 @@ class Article extends Model
 
     public function shareImageUrl(): ?string
     {
+        if (MediaPath::isExternalUrl($this->featured_image)) {
+            return trim((string) $this->featured_image);
+        }
+
         $sharePath = MediaPath::shareVariant($this->featured_image);
 
         if ($sharePath !== null && Storage::disk('public')->exists($sharePath) && Route::has('media.public')) {

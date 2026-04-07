@@ -4,10 +4,29 @@ namespace App\Support;
 
 class MediaPath
 {
+    public static function isExternalUrl(?string $path): bool
+    {
+        if ($path === null) {
+            return false;
+        }
+
+        $normalized = trim($path);
+
+        if ($normalized === '') {
+            return false;
+        }
+
+        return filter_var($normalized, FILTER_VALIDATE_URL) !== false;
+    }
+
     public static function normalize(?string $path): ?string
     {
         if ($path === null) {
             return null;
+        }
+
+        if (self::isExternalUrl($path)) {
+            return trim($path);
         }
 
         $normalized = trim(str_replace('\\', '/', $path));
@@ -37,6 +56,10 @@ class MediaPath
 
     public static function shareVariant(?string $path): ?string
     {
+        if (self::isExternalUrl($path)) {
+            return null;
+        }
+
         $normalized = self::normalize($path);
 
         if ($normalized === null) {

@@ -28,6 +28,10 @@
   - tabel `news_candidates` untuk kandidat berita hasil pipeline sebelum menjadi draft artikel
   - `SourceRegistryService` untuk registry sumber aktif
   - `NewsCandidateService` untuk upsert kandidat berita dari hasil ingestion
+- Menyesuaikan workflow draft AI di hosting:
+  - scheduler `news:generate-drafts` diubah menjadi setiap 1 jam
+  - draft AI otomatis membawa `image_url` kandidat sebagai featured image bila sumber menyediakannya
+  - artikel kini mendukung featured image dari URL eksternal agar draft sumber nasional tetap menampilkan gambar tanpa upload manual
   - unit test ditambahkan untuk registry sumber dan penyimpanan kandidat berita
 - Menambahkan validasi kandidat berita AI dan halaman review admin:
   - `NewsCandidateValidationService` menolak kandidat stale, minim data, link sumber tidak layak, atau duplikat dengan berita published

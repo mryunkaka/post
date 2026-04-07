@@ -295,6 +295,16 @@ class ArticleService
             return $this->mediaService->storeArticleFeaturedImage($uploadedFile, $article->featured_image);
         }
 
+        if (is_string($uploadedFile)) {
+            $uploadedFile = trim($uploadedFile);
+
+            if ($uploadedFile !== '') {
+                $this->mediaService->deletePublicFile($article->featured_image);
+
+                return $uploadedFile;
+            }
+        }
+
         return $article->featured_image;
     }
 }

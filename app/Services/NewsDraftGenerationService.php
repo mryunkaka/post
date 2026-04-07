@@ -71,6 +71,7 @@ class NewsDraftGenerationService
             'slug' => '',
             'excerpt' => (string) Arr::get($draft, 'excerpt', $candidate->excerpt),
             'content' => $this->appendSourceAttribution((string) Arr::get($draft, 'content_html', ''), $sourceBundle),
+            'featured_image' => $this->resolveFeaturedImageUrl($sourceBundle),
             'tags' => $this->normalizeTags(Arr::get($draft, 'tags', [])),
             'meta_title' => (string) Arr::get($draft, 'meta_title', $candidate->title),
             'meta_description' => (string) Arr::get($draft, 'meta_description', $candidate->excerpt),
@@ -235,6 +236,15 @@ class NewsDraftGenerationService
         }
 
         return trim(implode("\n", $lines));
+    }
+
+    protected function resolveFeaturedImageUrl(Collection $sources): ?string
+    {
+        $imageUrl = $sources
+            ->map(fn (NewsCandidate $source) => trim((string) ($source->image_url ?? '')))
+            ->first(fn (string $url) => $url !== '' && filter_var($url, FILTER_VALIDATE_URL) !== false);
+
+        return $imageUrl ?: null;
     }
 
     /**

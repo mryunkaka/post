@@ -99,6 +99,10 @@ class MediaService
 
     public function deletePublicFile(?string $path): void
     {
+        if (MediaPath::isExternalUrl($path)) {
+            return;
+        }
+
         $path = MediaPath::normalize($path);
         $sharePath = MediaPath::shareVariant($path);
 

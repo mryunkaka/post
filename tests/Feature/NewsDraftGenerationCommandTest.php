@@ -26,6 +26,7 @@ class NewsDraftGenerationCommandTest extends TestCase
             'status' => 'validated',
             'source_name' => 'ANTARA Kalsel',
             'source_url' => 'https://example.test/berita/ekonomi-kotabaru',
+            'image_url' => 'https://example.test/media/ekonomi-kotabaru.jpg',
             'title' => 'Ekonomi Kotabaru Bergerak Usai Aktivitas Pelabuhan Naik',
             'excerpt' => 'Pergerakan logistik disebut mulai memberi efek pada ekonomi pesisir Kotabaru.',
         ]);
@@ -66,6 +67,7 @@ class NewsDraftGenerationCommandTest extends TestCase
             'created_by_ai' => 1,
             'source_name' => 'ANTARA Kalsel',
             'source_url' => 'https://example.test/berita/ekonomi-kotabaru',
+            'featured_image' => 'https://example.test/media/ekonomi-kotabaru.jpg',
         ]);
 
         $this->assertSame('drafted', $candidate->fresh()->status);
