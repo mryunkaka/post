@@ -319,7 +319,10 @@
             @include('admin.partials.pagination', ['paginator' => $candidates])
         </div>
 
-        <div x-cloak x-show="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/65 px-4">
+    </div>
+
+    <template x-teleport="body">
+        <div x-cloak x-show="loading" class="fixed inset-0 z-[100] flex min-h-screen items-center justify-center bg-stone-950/55 px-4 backdrop-blur-md">
             <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
                 <p class="text-xs font-semibold uppercase tracking-[0.26em] text-amber-600">AI Process</p>
                 <h3 class="mt-2 text-2xl font-semibold text-stone-900" x-text="loadingTitle"></h3>
@@ -335,7 +338,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
     <script>
         function newsCandidateRunner(config) {

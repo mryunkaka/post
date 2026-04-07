@@ -40,6 +40,25 @@ class AdminNewsCandidateReviewTest extends TestCase
         $this->assertSame('validated', $candidate->fresh()->status);
     }
 
+    public function test_editor_can_validate_candidate_outside_priority_region_for_manual_review(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $candidate = NewsCandidate::factory()->create([
+            'status' => 'pending',
+            'region' => 'nasional',
+            'title' => 'Kasus viral nasional berdampak pada distribusi layanan publik',
+            'excerpt' => 'Ringkasan berita nasional yang cukup panjang untuk standar editorial dan tetap layak direview manual oleh user.',
+        ]);
+
+        $this->actingAs($editor)
+            ->patch(route('admin.news-candidates.validate', $candidate))
+            ->assertRedirect();
+
+        $this->assertSame('validated', $candidate->fresh()->status);
+    }
+
     public function test_wartawan_cannot_access_news_candidate_review(): void
     {
         $wartawan = User::factory()->create([

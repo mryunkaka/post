@@ -75,10 +75,6 @@ class NewsCandidateValidationService
             return 'Sumber berita terlalu lama untuk batch berita fresh harian.';
         }
 
-        if (! $this->isLocallyRelevant($candidate)) {
-            return 'Wilayah kandidat di luar fokus editorial prioritas.';
-        }
-
         if ($this->matchesExistingPublishedArticle($candidate)) {
             return 'Topik kandidat sudah pernah dipublikasikan dan terdeteksi duplikat.';
         }
