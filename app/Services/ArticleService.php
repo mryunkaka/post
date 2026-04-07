@@ -215,10 +215,15 @@ class ArticleService
             'excerpt' => $this->nullableString($data, 'excerpt'),
             'content' => $this->sanitizeHtml((string) $data['content']),
             'featured_image' => $this->resolveFeaturedImage($data, $article),
+            'source_name' => $this->nullableString($data, 'source_name'),
+            'source_url' => $this->nullableString($data, 'source_url'),
+            'source_published_at' => $this->nullableDateTime($data, 'source_published_at'),
             'meta_title' => $this->nullableString($data, 'meta_title'),
             'meta_description' => $this->nullableString($data, 'meta_description'),
             'schema_type' => Arr::get($data, 'schema_type', 'NewsArticle') ?: 'NewsArticle',
             'is_featured' => (bool) Arr::get($data, 'is_featured', false),
+            'created_by_ai' => (bool) Arr::get($data, 'created_by_ai', false),
+            'review_notes' => $this->nullableString($data, 'review_notes'),
             'published_at' => $this->nullableDateTime($data, 'published_at'),
         ];
     }

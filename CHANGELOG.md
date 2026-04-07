@@ -33,7 +33,22 @@
   - `NewsCandidateValidationService` menolak kandidat stale, minim data, link sumber tidak layak, atau duplikat dengan berita published
   - editor/admin mendapat halaman `Kandidat AI` untuk filter status/wilayah, validate, reject, dan reset kandidat
   - feature test dan unit test ditambahkan untuk alur review kandidat AI
+- Menambahkan ingestion otomatis kandidat berita AI:
+  - `NewsSourceFetcherService` mengambil item dari RSS/Atom dan fallback HTML extraction tanpa package tambahan
+  - `NewsIngestionService` menyimpan kandidat dari source registry lalu memvalidasinya otomatis
+  - command `news:ingest` dan scheduler 30 menit ditambahkan untuk source whitelist
+  - `.env.example` diperbarui dengan konfigurasi AI editorial ingestion
+- Menambahkan generate draft artikel AI dari kandidat tervalidasi:
+  - `GeminiEditorialService` menghubungkan kandidat berita ke model `gemini-2.5-flash-lite`
+  - `NewsDraftGenerationService` membuat draft artikel, kategori, tag, dan atribusi sumber otomatis
+  - command `news:generate-drafts` serta aksi admin `Buat Draft` ditambahkan
+  - artikel sekarang menyimpan `source_name`, `source_url`, dan `source_published_at` agar atribusi tampil di publik dan admin
 - Menyinkronkan [docs/MANUAL_DATABASE_SCHEMA.sql] agar shared hosting tanpa SSH dapat membuat tabel `news_candidates` via phpMyAdmin
+- Menambahkan [docs/MANUAL_DATABASE_UPDATES.sql] untuk update incremental phpMyAdmin pada database existing agar tidak gagal karena tabel sudah ada
+- Merapikan sinkronisasi dokumentasi proyek:
+  - memperbarui status backlog di `docs/PROJECT_MASTER_DOC.md`
+  - menyelaraskan catatan admin panel minimal dengan modul yang sudah aktif
+  - memperbarui kesimpulan fase proyek agar tidak lagi menyebut rate limiting, backup, mail async, dan komentar sebagai pekerjaan tersisa
 
 - Memperbarui blok `NEED VERIFICATION` di docs berdasarkan hasil verifikasi lokal: runtime PHP 8.4.11, `pdo_mysql`, `gd`, ketersediaan scheduler command, dan keputusan final editor admin memakai Quill
 - Mengalihkan konfigurasi PHPUnit dari `pdo_sqlite` ke MySQL `media_test` dan menstabilkan test rate limiting agar aman dijalankan berulang

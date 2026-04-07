@@ -35,6 +35,7 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
             Route::patch('news-candidates/{newsCandidate}/validate', [NewsCandidateController::class, 'validateCandidate'])->name('news-candidates.validate');
             Route::patch('news-candidates/{newsCandidate}/reject', [NewsCandidateController::class, 'reject'])->name('news-candidates.reject');
             Route::patch('news-candidates/{newsCandidate}/reset', [NewsCandidateController::class, 'reset'])->name('news-candidates.reset');
+            Route::post('news-candidates/{newsCandidate}/generate-draft', [NewsCandidateController::class, 'generateDraft'])->name('news-candidates.generate-draft');
         });
 
         Route::middleware('role:admin')->group(function (): void {

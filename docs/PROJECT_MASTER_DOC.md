@@ -279,6 +279,10 @@ Fondasi implementasi minimum:
 - `NewsCandidateService` untuk menyimpan atau memperbarui kandidat berita dari pipeline ingestion
 - `NewsCandidateValidationService` untuk menolak kandidat stale, duplikat, atau minim data sebelum drafting
 - Halaman admin `Kandidat AI` untuk editor/admin memvalidasi kandidat sebelum tahap generate draft
+- `NewsSourceFetcherService` untuk menarik kandidat dari RSS/Atom dan fallback HTML source legal
+- Command `news:ingest` dan scheduler berkala untuk memasok `news_candidates` otomatis
+- `GeminiEditorialService` untuk menghasilkan payload draft artikel JSON dari kandidat tervalidasi
+- `NewsDraftGenerationService` dan command `news:generate-drafts` untuk membentuk draft artikel AI lengkap dengan atribusi sumber
 
 Aturan operasional:
 
@@ -1804,7 +1808,7 @@ Format wajib:
 - [x] Siapkan admin panel minimal
   - Status: `DONE`
   - File terkait: `routes/admin.php`, `resources/views/admin`, `app/Http/Controllers/Admin`, `app/Http/Requests/Admin`, `tests/Feature/AdminCategoryManagementTest.php`
-  - Catatan: Admin panel internal dasar untuk artikel dan kategori sudah aktif; manajemen setting awal masih menjadi langkah berikutnya
+  - Catatan: Admin panel internal dasar untuk artikel, kategori, setting situs, komentar, dan review kandidat AI sudah aktif sesuai baseline operasional saat ini
 
 - [x] Implement media upload dan image processing policy
   - Status: `DONE`
@@ -1876,9 +1880,53 @@ Format wajib:
   - File terkait: `app/Models/Comment.php`, `app/Services/CommentService.php`, `app/Http/Controllers/Front/CommentController.php`, `app/Http/Controllers/Admin/CommentController.php`, `app/Http/Requests/Front/StoreCommentRequest.php`, `routes/web.php`, `routes/admin.php`, `resources/views/frontend/articles/show.blade.php`, `resources/views/admin/comments`, `tests/Feature/GuestCommentFlowTest.php`
   - Catatan: Guest comment aktif di artikel publik, semua komentar baru masuk `pending`, honeypot aktif, metadata `ip_address` dan `user_agent` disimpan, reply hanya ke komentar root approved, dan editor/admin dapat memoderasi komentar dari panel admin
 
+Catatan status implementasi:
+
+- Seluruh task implementasi pada backlog inti saat ini sudah berada pada status `DONE`
+- Item yang masih terbuka di dokumen ini hanya blok `NEED VERIFICATION` untuk validasi environment hosting produksi aktual
+
 ## 20. Changelog
 
 Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, catat di bagian ini.
+
+### 2026-04-08
+
+- Menetapkan spesifikasi resmi AI newsroom harian di docs:
+  - provider AI utama `Google Gemini`
+  - model utama `gemini-2.5-flash-lite`
+  - target maksimal `10` draft berita per hari
+  - fokus wilayah Kalimantan Selatan, Tanah Bumbu, dan Kotabaru
+  - AI wajib bekerja dari sumber terverifikasi, menyertakan link sumber, dan tidak boleh auto-publish
+  - draft AI yang terindikasi halu atau tidak valid wajib dibuang lalu kandidat diganti
+  - user/editor diposisikan sebagai validator akhir sebelum publish
+- Menambahkan kebijakan legal sourcing dan atribusi sumber di docs:
+  - hanya sumber legal dan terverifikasi yang boleh dipakai
+  - artikel AI wajib menampilkan nama media sumber dan link langsung ke artikel asal
+  - homepage media tidak boleh dipakai sebagai pengganti link sumber
+  - ringkasan AI tidak boleh menyalin penuh narasi media lain untuk menghindari pelanggaran hak cipta dan sengketa hukum
+- Menambahkan aturan gaya tulis editorial AI di docs:
+  - judul harus menarik, kreatif, masuk akal, dan tidak clickbait kosong
+  - narasi harus mudah dibaca, enak dipahami, tidak membosankan, dan tetap profesional
+  - isi artikel wajib nyambung dari awal sampai akhir dan tidak boleh terasa halu, aneh, atau tidak relevan
+- Menambahkan fondasi backend untuk provisioning kategori internal tanpa login admin:
+  - `CategoryProvisionService` dapat mencari kategori existing atau membuat kategori baru secara terkontrol
+  - AI diarahkan memakai service internal backend, bukan email/password admin untuk login ke panel
+  - test unit ditambahkan untuk memastikan resolve existing category dan create category baru berjalan aman
+- Menambahkan fondasi AI newsroom tahap ingestion:
+  - `config/ai_editorial.php` untuk provider `gemini-2.5-flash-lite`, limit harian, dan whitelist sumber Kalsel/Tanah Bumbu/Kotabaru
+  - tabel `news_candidates` untuk kandidat berita hasil pipeline sebelum menjadi draft artikel
+  - `SourceRegistryService` untuk registry sumber aktif
+  - `NewsCandidateService` untuk upsert kandidat berita dari hasil ingestion
+  - `NewsCandidateValidationService` untuk menolak kandidat stale, duplikat, atau minim data sebelum drafting
+- Menambahkan validasi kandidat berita AI dan halaman review admin:
+  - editor/admin mendapat halaman `Kandidat AI` untuk filter status dan wilayah
+  - aksi validate, reject, dan reset kandidat sudah tersedia
+  - feature test dan unit test ditambahkan untuk alur review kandidat AI
+- Menyinkronkan `docs/MANUAL_DATABASE_SCHEMA.sql` agar shared hosting tanpa SSH dapat membuat tabel `news_candidates` via phpMyAdmin
+- Merapikan sinkronisasi dokumentasi:
+  - memperbarui status admin panel minimal agar mencerminkan modul yang sudah aktif
+  - menandai bahwa backlog implementasi inti telah habis dan sisa item terbuka berada pada blok `NEED VERIFICATION`
+  - memperbarui kesimpulan dokumen agar sesuai dengan status repo aktual
 
 ### 2026-04-07
 
@@ -2281,4 +2329,4 @@ Status aktual per `2026-04-02`:
 
 Kesimpulan:
 
-Proyek saat ini berada pada fase `foundation + public baseline`, yaitu fondasi admin internal dan frontend publik minimum sudah aktif, sementara fitur operasional lanjutan yang tersisa berfokus pada rate limiting, backup, mail async, dan komentar.
+Proyek saat ini berada pada fase `foundation + editorial automation baseline`, yaitu fondasi admin internal, frontend publik, komentar, backup, mail async, rate limiting, dan baseline AI newsroom sudah aktif. Sisa pekerjaan terbuka yang tercatat di dokumen ini berfokus pada verifikasi environment hosting produksi aktual, khususnya runtime PHP, Redis, cron scheduler, dukungan GD atau Imagick, dan keputusan akhir kebutuhan AMP.

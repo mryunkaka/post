@@ -56,6 +56,22 @@
                 </div>
             @endif
 
+            @if ($article->source_name && $article->source_url)
+                <section class="rounded-[1.75rem] border border-amber-200 bg-amber-50/70 px-5 py-4 text-sm text-stone-700">
+                    <p class="font-semibold text-stone-900">Sumber rujukan</p>
+                    <p class="mt-2">
+                        Artikel ini disusun redaksi dengan rujukan dari
+                        <a href="{{ $article->source_url }}" target="_blank" rel="nofollow noopener noreferrer" class="font-semibold text-amber-800 transition hover:text-amber-950">
+                            {{ $article->source_name }}
+                        </a>
+                        @if ($article->source_published_at)
+                            pada {{ $article->source_published_at->translatedFormat('d M Y H:i') }}
+                        @endif
+                        .
+                    </p>
+                </section>
+            @endif
+
             <div class="article-content rounded-[2rem] border border-stone-200/80 bg-white p-8 shadow-[0_28px_90px_-54px_rgba(28,25,23,0.4)]" style="text-align: justify; text-justify: inter-word;">
                 {!! $article->content !!}
             </div>
@@ -217,6 +233,12 @@
                         <dt class="font-semibold text-stone-900">Views</dt>
                         <dd class="mt-1 text-stone-600">{{ number_format($article->views_count) }}</dd>
                     </div>
+                    @if ($article->source_name)
+                        <div>
+                            <dt class="font-semibold text-stone-900">Sumber</dt>
+                            <dd class="mt-1 text-stone-600">{{ $article->source_name }}</dd>
+                        </div>
+                    @endif
                 </dl>
             </section>
 

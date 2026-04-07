@@ -101,6 +101,14 @@
                                     </td>
                                     <td class="px-6 py-5">
                                         <div class="flex min-w-[220px] flex-wrap justify-end gap-2">
+                                            @if ($candidate->status === 'validated' && ! $candidate->article)
+                                                <form method="POST" action="{{ route('admin.news-candidates.generate-draft', $candidate) }}">
+                                                    @csrf
+                                                    <button type="submit" class="rounded-full border border-sky-300 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:border-sky-700 hover:text-sky-900">
+                                                        Buat Draft
+                                                    </button>
+                                                </form>
+                                            @endif
                                             <form method="POST" action="{{ route('admin.news-candidates.validate', $candidate) }}">
                                                 @csrf
                                                 @method('PATCH')

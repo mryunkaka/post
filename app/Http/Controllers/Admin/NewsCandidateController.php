@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\NewsCandidate;
+use App\Services\NewsDraftGenerationService;
 use App\Services\NewsCandidateValidationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +14,7 @@ class NewsCandidateController extends Controller
 {
     public function __construct(
         protected NewsCandidateValidationService $validationService,
+        protected NewsDraftGenerationService $draftGenerationService,
     ) {}
 
     public function index(Request $request): View
@@ -64,5 +66,14 @@ class NewsCandidateController extends Controller
         $this->validationService->reset($newsCandidate);
 
         return back()->with('status', 'Kandidat AI dikembalikan ke status pending.');
+    }
+
+    public function generateDraft(NewsCandidate $newsCandidate): RedirectResponse
+    {
+        $article = $this->draftGenerationService->generateDraftForCandidate($newsCandidate);
+
+        return redirect()
+            ->route('admin.articles.edit', $article)
+            ->with('status', 'Draft artikel AI berhasil dibuat dari kandidat terverifikasi.');
     }
 }

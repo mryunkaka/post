@@ -2,6 +2,11 @@
 -- Manual database schema SQL for phpMyAdmin import
 -- Source of truth implementation: database/migrations
 -- Keep this file synchronized with every migration and relevant model change.
+-- IMPORTANT:
+-- 1. File ini hanya untuk instalasi database BARU / kosong.
+-- 2. Jika database Anda SUDAH ADA tabelnya, jangan jalankan file ini dari atas.
+-- 3. Untuk database existing di shared hosting/phpMyAdmin, gunakan file:
+--    docs/MANUAL_DATABASE_UPDATES.sql
 
 CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -117,6 +122,9 @@ CREATE TABLE articles (
     excerpt TEXT NULL,
     content LONGTEXT NOT NULL,
     featured_image VARCHAR(255) NULL,
+    source_name VARCHAR(180) NULL,
+    source_url VARCHAR(1000) NULL,
+    source_published_at TIMESTAMP NULL,
     status ENUM('draft', 'review', 'published') NOT NULL DEFAULT 'draft',
     review_notes TEXT NULL,
     meta_title VARCHAR(255) NULL,

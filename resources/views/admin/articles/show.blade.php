@@ -77,6 +77,18 @@
                         <dt class="font-semibold text-stone-900">Archived At</dt>
                         <dd class="mt-1">{{ $article->archived_at?->format('d M Y H:i') ?? '-' }}</dd>
                     </div>
+                    <div>
+                        <dt class="font-semibold text-stone-900">Sumber</dt>
+                        <dd class="mt-1">
+                            @if ($article->source_name && $article->source_url)
+                                <a href="{{ $article->source_url }}" class="text-amber-700 transition hover:text-amber-900" target="_blank" rel="noreferrer">
+                                    {{ $article->source_name }}
+                                </a>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                    </div>
                 </dl>
 
                 @if ($article->featuredImageUrl())

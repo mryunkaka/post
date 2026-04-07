@@ -27,6 +27,9 @@ class Article extends Model
         'excerpt',
         'content',
         'featured_image',
+        'source_name',
+        'source_url',
+        'source_published_at',
         'status',
         'review_notes',
         'meta_title',
@@ -52,6 +55,7 @@ class Article extends Model
             'created_by_ai' => 'boolean',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
+            'source_published_at' => 'datetime',
         ];
     }
 
