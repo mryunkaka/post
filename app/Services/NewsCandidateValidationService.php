@@ -75,7 +75,7 @@ class NewsCandidateValidationService
             return 'Sumber berita terlalu lama untuk batch berita fresh harian.';
         }
 
-        if (! $this->hasAllowedRegion($candidate->region)) {
+        if (! $this->isLocallyRelevant($candidate)) {
             return 'Wilayah kandidat di luar fokus editorial prioritas.';
         }
 
@@ -118,6 +118,29 @@ class NewsCandidateValidationService
         }
 
         return in_array(Str::lower($region), config('ai_editorial.regions.priority', []), true);
+    }
+
+    protected function isLocallyRelevant(NewsCandidate $candidate): bool
+    {
+        if ($this->hasAllowedRegion($candidate->region)) {
+            return true;
+        }
+
+        $haystack = Str::lower(implode(' ', array_filter([
+            $candidate->title,
+            $candidate->excerpt,
+            $candidate->facts_summary,
+            $candidate->source_name,
+            $candidate->source_url,
+        ])));
+
+        foreach (config('ai_editorial.regions.focus_keywords', []) as $keyword) {
+            if (Str::contains($haystack, Str::lower((string) $keyword))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function matchesExistingPublishedArticle(NewsCandidate $candidate): bool

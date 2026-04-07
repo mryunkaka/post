@@ -5,8 +5,9 @@ namespace App\Services;
 use App\Models\Article;
 use App\Models\NewsCandidate;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class NewsDraftGenerationService
@@ -24,7 +25,9 @@ class NewsDraftGenerationService
     {
         $limit = max(1, $limit ?? (int) config('ai_editorial.generation.default_limit', 10));
         $author = $this->resolveAuthor();
-        $candidates = $this->validatedCandidates($limit);
+        $poolLimit = max($limit, $limit * max(1, (int) config('ai_editorial.generation.pool_multiplier', 3)));
+        $candidatePool = $this->validatedCandidates($poolLimit);
+        $candidates = $this->selectPrimaryCandidates($candidatePool, $limit);
 
         $summary = [
             'processed' => $candidates->count(),
@@ -34,7 +37,7 @@ class NewsDraftGenerationService
 
         foreach ($candidates as $candidate) {
             try {
-                $this->generateDraftForCandidate($candidate, $author);
+                $this->generateDraftForCandidate($candidate, $author, $candidatePool);
                 $summary['drafted']++;
             } catch (\Throwable $exception) {
                 $candidate->forceFill([
@@ -48,10 +51,12 @@ class NewsDraftGenerationService
         return $summary;
     }
 
-    public function generateDraftForCandidate(NewsCandidate $candidate, ?User $author = null): Article
+    public function generateDraftForCandidate(NewsCandidate $candidate, ?User $author = null, ?Collection $candidatePool = null): Article
     {
         $author ??= $this->resolveAuthor();
-        $draft = $this->geminiEditorialService->generateDraft($candidate);
+        $candidatePool ??= $this->validatedCandidates((int) config('ai_editorial.generation.pool_multiplier', 3) * 10);
+        $sourceBundle = $this->buildSourceBundle($candidate, $candidatePool);
+        $draft = $this->geminiEditorialService->generateDraft($candidate, $sourceBundle);
         $category = $this->categoryProvisionService->resolveOrCreate([
             'name' => (string) Arr::get($draft, 'category_name', 'Lokal'),
             'description' => 'Kategori hasil workflow AI editorial.',
@@ -65,7 +70,7 @@ class NewsDraftGenerationService
             'title' => (string) Arr::get($draft, 'title', $candidate->title),
             'slug' => '',
             'excerpt' => (string) Arr::get($draft, 'excerpt', $candidate->excerpt),
-            'content' => $this->appendSourceAttribution((string) Arr::get($draft, 'content_html', ''), $candidate),
+            'content' => $this->appendSourceAttribution((string) Arr::get($draft, 'content_html', ''), $sourceBundle),
             'tags' => $this->normalizeTags(Arr::get($draft, 'tags', [])),
             'meta_title' => (string) Arr::get($draft, 'meta_title', $candidate->title),
             'meta_description' => (string) Arr::get($draft, 'meta_description', $candidate->excerpt),
@@ -73,17 +78,19 @@ class NewsDraftGenerationService
             'is_featured' => false,
             'published_at' => null,
             'created_by_ai' => true,
-            'review_notes' => $this->reviewNotes($candidate),
+            'review_notes' => $this->reviewNotes($sourceBundle),
             'source_name' => $candidate->source_name,
             'source_url' => $candidate->source_url,
             'source_published_at' => $candidate->source_published_at,
         ]);
 
-        $candidate->forceFill([
-            'status' => 'drafted',
-            'article_id' => $article->id,
-            'rejection_reason' => null,
-        ])->save();
+        foreach ($sourceBundle as $bundleCandidate) {
+            $bundleCandidate->forceFill([
+                'status' => 'drafted',
+                'article_id' => $article->id,
+                'rejection_reason' => null,
+            ])->save();
+        }
 
         return $article;
     }
@@ -119,7 +126,63 @@ class NewsDraftGenerationService
             ->whereNull('article_id')
             ->orderByDesc('source_published_at')
             ->take($limit)
-            ->get();
+            ->get()
+            ->values();
+    }
+
+    protected function selectPrimaryCandidates(Collection $candidatePool, int $limit): Collection
+    {
+        $selected = collect();
+        $usedSignatures = [];
+
+        foreach ($candidatePool as $candidate) {
+            $signature = $this->storySignature($candidate);
+
+            if ($signature === '' || in_array($signature, $usedSignatures, true)) {
+                continue;
+            }
+
+            $selected->push($candidate);
+            $usedSignatures[] = $signature;
+
+            if ($selected->count() >= $limit) {
+                break;
+            }
+        }
+
+        return $selected;
+    }
+
+    protected function buildSourceBundle(NewsCandidate $candidate, Collection $candidatePool): Collection
+    {
+        $primaryKeywords = $this->storyKeywords($candidate);
+        $primarySignature = $this->storySignature($candidate);
+        $maxSources = max(1, (int) config('ai_editorial.generation.max_sources_per_story', 4));
+
+        $related = $candidatePool
+            ->filter(function (NewsCandidate $item) use ($candidate, $primaryKeywords, $primarySignature): bool {
+                if ($item->getKey() === $candidate->getKey()) {
+                    return false;
+                }
+
+                if ($item->article_id !== null || $item->status !== 'validated') {
+                    return false;
+                }
+
+                if ($this->storySignature($item) === $primarySignature) {
+                    return true;
+                }
+
+                return $this->keywordOverlap($primaryKeywords, $this->storyKeywords($item)) >= 2;
+            })
+            ->sortByDesc('source_published_at')
+            ->unique('source_url')
+            ->take($maxSources - 1);
+
+        return collect([$candidate])
+            ->concat($related)
+            ->unique('source_url')
+            ->values();
     }
 
     /**
@@ -142,25 +205,88 @@ class NewsDraftGenerationService
         return '';
     }
 
-    protected function appendSourceAttribution(string $content, NewsCandidate $candidate): string
+    protected function appendSourceAttribution(string $content, Collection $sources): string
     {
         $content = trim($content);
-        $attribution = sprintf(
-            '<p><strong>Sumber:</strong> <a href="%s" target="_blank" rel="nofollow noopener noreferrer">%s</a>.</p>',
-            e($candidate->source_url),
-            e($candidate->source_name)
-        );
+        $items = $sources
+            ->unique('source_url')
+            ->map(fn (NewsCandidate $source): string => sprintf(
+                '<li><a href="%s" target="_blank" rel="nofollow noopener noreferrer">%s</a></li>',
+                e($source->source_url),
+                e($source->source_name.' - '.$source->title)
+            ))
+            ->implode('');
+        $attribution = '<div><p><strong>Sumber rujukan:</strong></p><ul>'.$items.'</ul></div>';
 
         return $content === '' ? $attribution : $content."\n\n".$attribution;
     }
 
-    protected function reviewNotes(NewsCandidate $candidate): string
+    protected function reviewNotes(Collection $sources): string
     {
-        return trim(implode("\n", array_filter([
-            'Draft dibuat otomatis oleh AI editorial dan wajib direview editor sebelum publish.',
-            'Sumber: '.$candidate->source_name,
-            'Link sumber: '.$candidate->source_url,
-            $candidate->image_url ? 'Referensi gambar sumber: '.$candidate->image_url : null,
+        $lines = ['Draft dibuat otomatis oleh AI editorial dan wajib direview editor sebelum publish.'];
+
+        foreach ($sources->unique('source_url') as $source) {
+            $lines[] = 'Sumber: '.$source->source_name;
+            $lines[] = 'Link sumber: '.$source->source_url;
+
+            if ($source->image_url) {
+                $lines[] = 'Referensi gambar sumber: '.$source->image_url;
+            }
+        }
+
+        return trim(implode("\n", $lines));
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function storyKeywords(NewsCandidate $candidate): array
+    {
+        $text = Str::lower(implode(' ', array_filter([
+            $candidate->title,
+            $candidate->excerpt,
+            $candidate->facts_summary,
+            $candidate->region,
         ])));
+
+        $text = preg_replace('/[^a-z0-9\s-]/', ' ', $text) ?? $text;
+        $tokens = collect(preg_split('/\s+/', $text) ?: [])
+            ->map(fn (string $token) => trim($token))
+            ->filter(fn (string $token) => $token !== '' && strlen($token) >= 4)
+            ->reject(fn (string $token) => in_array($token, $this->stopwords(), true))
+            ->unique()
+            ->values()
+            ->all();
+
+        return array_slice($tokens, 0, 8);
+    }
+
+    protected function storySignature(NewsCandidate $candidate): string
+    {
+        $keywords = $this->storyKeywords($candidate);
+
+        return implode('-', array_slice($keywords, 0, 3));
+    }
+
+    /**
+     * @param  list<string>  $left
+     * @param  list<string>  $right
+     */
+    protected function keywordOverlap(array $left, array $right): int
+    {
+        return count(array_intersect($left, $right));
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function stopwords(): array
+    {
+        return [
+            'yang', 'dengan', 'untuk', 'pada', 'dari', 'dalam', 'akan', 'telah', 'para', 'warga',
+            'kabar', 'tahun', 'resmi', 'tingkat', 'hingga', 'setelah', 'karena', 'lebih', 'sebagai',
+            'berita', 'daerah', 'provinsi', 'kabupaten', 'kecamatan', 'desa', 'media', 'center',
+            'pemkab', 'pemprov', 'antara', 'nasional', 'selatan', 'utara', 'timur', 'barat',
+        ];
     }
 }

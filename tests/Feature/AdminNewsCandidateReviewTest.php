@@ -50,4 +50,71 @@ class AdminNewsCandidateReviewTest extends TestCase
             ->get(route('admin.news-candidates.index'))
             ->assertForbidden();
     }
+
+    public function test_editor_can_delete_news_candidate_without_article(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $candidate = NewsCandidate::factory()->create([
+            'article_id' => null,
+        ]);
+
+        $this->actingAs($editor)
+            ->delete(route('admin.news-candidates.destroy', $candidate))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('news_candidates', [
+            'id' => $candidate->id,
+        ]);
+    }
+
+    public function test_editor_cannot_delete_news_candidate_that_is_linked_to_article(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $candidate = NewsCandidate::factory()->create([
+            'article_id' => \App\Models\Article::factory()->create()->id,
+        ]);
+
+        $this->actingAs($editor)
+            ->delete(route('admin.news-candidates.destroy', $candidate))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('news_candidates', [
+            'id' => $candidate->id,
+        ]);
+    }
+
+    public function test_editor_can_bulk_delete_unlinked_news_candidates(): void
+    {
+        $editor = User::factory()->create([
+            'role' => 'editor',
+        ]);
+        $first = NewsCandidate::factory()->create([
+            'article_id' => null,
+            'created_at' => now(),
+        ]);
+        $second = NewsCandidate::factory()->create([
+            'article_id' => null,
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs($editor)
+            ->post(route('admin.news-candidates.bulk'), [
+                'action' => 'delete',
+                'selection_scope' => 'page',
+                'selected_ids' => [$first->id, $second->id],
+                'date_from' => now()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ])
+            ->assertRedirect(route('admin.news-candidates.index', [
+                'date_from' => now()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]));
+
+        $this->assertDatabaseMissing('news_candidates', ['id' => $first->id]);
+        $this->assertDatabaseMissing('news_candidates', ['id' => $second->id]);
+    }
 }

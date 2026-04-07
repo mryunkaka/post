@@ -283,6 +283,8 @@ Fondasi implementasi minimum:
 - Command `news:ingest` dan scheduler berkala untuk memasok `news_candidates` otomatis
 - `GeminiEditorialService` untuk menghasilkan payload draft artikel JSON dari kandidat tervalidasi
 - `NewsDraftGenerationService` dan command `news:generate-drafts` untuk membentuk draft artikel AI lengkap dengan atribusi sumber
+- Pool ingestion baseline AI newsroom memakai target `30` kandidat untuk disaring menjadi maksimal `10` draft topik unik
+- Draft AI wajib memprioritaskan variasi isu dan menggabungkan beberapa sumber terkait jika membahas kejadian yang sama
 
 Aturan operasional:
 

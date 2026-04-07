@@ -38,11 +38,23 @@
   - `NewsIngestionService` menyimpan kandidat dari source registry lalu memvalidasinya otomatis
   - command `news:ingest` dan scheduler 30 menit ditambahkan untuk source whitelist
   - `.env.example` diperbarui dengan konfigurasi AI editorial ingestion
+- Menambahkan peningkatan UX tabel admin untuk artikel, komentar, dan kandidat AI:
+  - filter `search + date range` dengan default hari ini
+  - bulk selection `pilih halaman / hasil filter / semua data / batal pilih`
+  - bulk action untuk status dan hapus
+  - pagination sederhana berbasis icon
+  - tombol aksi per baris diganti ke icon button horizontal agar tidak wrap ke bawah
 - Menambahkan generate draft artikel AI dari kandidat tervalidasi:
   - `GeminiEditorialService` menghubungkan kandidat berita ke model `gemini-2.5-flash-lite`
   - `NewsDraftGenerationService` membuat draft artikel, kategori, tag, dan atribusi sumber otomatis
   - command `news:generate-drafts` serta aksi admin `Buat Draft` ditambahkan
   - artikel sekarang menyimpan `source_name`, `source_url`, dan `source_published_at` agar atribusi tampil di publik dan admin
+- Meningkatkan kualitas AI newsroom:
+  - ingest default dinaikkan menjadi `30` kandidat dan dibagi lebih seimbang antar sumber
+  - feed per sumber diperluas agar variasi topik lebih tinggi
+  - draft generation kini memilih topik utama yang lebih beragam, menggabungkan beberapa sumber terkait, dan menghindari dominasi satu isu seperti MTQ
+  - prompt Gemini diperkuat agar artikel lebih panjang, lebih kaya konteks, dan tidak dangkal
+- Menambahkan tombol `Hapus` untuk kandidat AI di panel admin, dengan guard agar kandidat yang sudah terhubung ke draft/artikel tidak bisa dihapus sembarangan
 - Menyinkronkan [docs/MANUAL_DATABASE_SCHEMA.sql] agar shared hosting tanpa SSH dapat membuat tabel `news_candidates` via phpMyAdmin
 - Menambahkan [docs/MANUAL_DATABASE_UPDATES.sql] untuk update incremental phpMyAdmin pada database existing agar tidak gagal karena tabel sudah ada
 - Memperluas `public/artisan-runner.php` untuk shared hosting agar dapat menjalankan `news:ingest`, `news:generate-drafts`, dan `schedule:run` via token web

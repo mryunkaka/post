@@ -227,4 +227,35 @@ class AdminArticleWorkflowTest extends TestCase
             $article->fresh()->tags->pluck('name')->sort()->values()->all()
         );
     }
+
+    public function test_admin_can_bulk_delete_selected_articles(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+        $first = Article::factory()->create([
+            'status' => 'draft',
+            'updated_at' => now(),
+        ]);
+        $second = Article::factory()->create([
+            'status' => 'review',
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.articles.bulk'), [
+                'action' => 'delete',
+                'selection_scope' => 'page',
+                'selected_ids' => [$first->id, $second->id],
+                'date_from' => now()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ])
+            ->assertRedirect(route('admin.articles.index', [
+                'date_from' => now()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]));
+
+        $this->assertDatabaseMissing('articles', ['id' => $first->id]);
+        $this->assertDatabaseMissing('articles', ['id' => $second->id]);
+    }
 }

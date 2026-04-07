@@ -16,6 +16,7 @@ class NewsDraftGenerationCommandTest extends TestCase
     public function test_news_generate_drafts_command_creates_article_from_validated_candidate(): void
     {
         Config::set('ai_editorial.api_key', 'test-key');
+        Config::set('ai_editorial.generation.max_sources_per_story', 4);
         User::factory()->create([
             'role' => 'admin',
             'email' => 'admin@example.com',
@@ -25,6 +26,15 @@ class NewsDraftGenerationCommandTest extends TestCase
             'status' => 'validated',
             'source_name' => 'ANTARA Kalsel',
             'source_url' => 'https://example.test/berita/ekonomi-kotabaru',
+            'title' => 'Ekonomi Kotabaru Bergerak Usai Aktivitas Pelabuhan Naik',
+            'excerpt' => 'Pergerakan logistik disebut mulai memberi efek pada ekonomi pesisir Kotabaru.',
+        ]);
+        $relatedCandidate = NewsCandidate::factory()->create([
+            'status' => 'validated',
+            'source_name' => 'Media Center Kotabaru',
+            'source_url' => 'https://example.test/berita/ekonomi-kotabaru-2',
+            'title' => 'Aktivitas Pelabuhan Kotabaru Meningkat, Distribusi Barang Ikut Ramai',
+            'excerpt' => 'Peningkatan distribusi barang disebut menghidupkan ekonomi pesisir dan pasar lokal.',
         ]);
 
         Http::fake([
@@ -59,6 +69,8 @@ class NewsDraftGenerationCommandTest extends TestCase
         ]);
 
         $this->assertSame('drafted', $candidate->fresh()->status);
+        $this->assertSame('drafted', $relatedCandidate->fresh()->status);
         $this->assertNotNull($candidate->fresh()->article_id);
+        $this->assertSame($candidate->fresh()->article_id, $relatedCandidate->fresh()->article_id);
     }
 }

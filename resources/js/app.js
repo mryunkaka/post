@@ -180,6 +180,104 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    document.querySelectorAll('[data-bulk-table]').forEach((container) => {
+        const bulkForm = container.querySelector('[data-bulk-form]');
+
+        if (! (bulkForm instanceof HTMLFormElement)) {
+            return;
+        }
+
+        const rowCheckboxes = Array.from(container.querySelectorAll('[data-row-checkbox]'));
+        const pageToggle = container.querySelector('[data-toggle-page]');
+        const selectedCount = container.querySelector('[data-selected-count]');
+        const scopeInput = bulkForm.querySelector('input[name="selection_scope"]');
+
+        const updateSelectionCount = () => {
+            const count = rowCheckboxes.filter((checkbox) => checkbox.checked).length;
+
+            if (selectedCount) {
+                selectedCount.textContent = `${count} dipilih`;
+            }
+
+            if (pageToggle instanceof HTMLInputElement) {
+                pageToggle.checked = count > 0 && count === rowCheckboxes.length;
+                pageToggle.indeterminate = count > 0 && count < rowCheckboxes.length;
+            }
+        };
+
+        const setScope = (scope) => {
+            if (scopeInput instanceof HTMLInputElement) {
+                scopeInput.value = scope;
+            }
+        };
+
+        const setCheckedState = (checked) => {
+            rowCheckboxes.forEach((checkbox) => {
+                checkbox.checked = checked;
+            });
+
+            updateSelectionCount();
+        };
+
+        pageToggle?.addEventListener('change', (event) => {
+            const target = event.target;
+
+            if (! (target instanceof HTMLInputElement)) {
+                return;
+            }
+
+            setScope('page');
+            setCheckedState(target.checked);
+        });
+
+        rowCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                setScope('page');
+                updateSelectionCount();
+            });
+        });
+
+        container.querySelectorAll('[data-select-scope]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const scope = button.getAttribute('data-select-scope');
+
+                if (! scope) {
+                    return;
+                }
+
+                if (scope === 'clear') {
+                    setScope('page');
+                    setCheckedState(false);
+
+                    return;
+                }
+
+                setScope(scope);
+                setCheckedState(true);
+            });
+        });
+
+        bulkForm.addEventListener('submit', (event) => {
+            const actionField = bulkForm.querySelector('select[name="action"]');
+            const scope = scopeInput instanceof HTMLInputElement ? scopeInput.value : 'page';
+            const hasSelection = rowCheckboxes.some((checkbox) => checkbox.checked);
+
+            if (actionField instanceof HTMLSelectElement && actionField.value === '') {
+                event.preventDefault();
+                window.alert('Pilih bulk action terlebih dahulu.');
+
+                return;
+            }
+
+            if ((scope === 'page' && ! hasSelection) || rowCheckboxes.length === 0) {
+                event.preventDefault();
+                window.alert('Pilih minimal satu data terlebih dahulu.');
+            }
+        });
+
+        updateSelectionCount();
+    });
 });
 
 Alpine.start();

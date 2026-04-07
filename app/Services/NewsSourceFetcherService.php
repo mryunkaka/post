@@ -27,21 +27,40 @@ class NewsSourceFetcherService
 
     protected function fetchFromFeed(object $source, int $limit): Collection
     {
-        $feedUrl = (string) ($source->feed_url ?? '');
+        $feedUrls = collect($source->feed_urls ?? [])
+            ->prepend((string) ($source->feed_url ?? ''))
+            ->map(fn (mixed $url) => trim((string) $url))
+            ->filter()
+            ->unique()
+            ->values();
 
-        if ($feedUrl === '') {
+        if ($feedUrls->isEmpty()) {
             return collect();
         }
 
-        $response = $this->http
-            ->timeout((int) config('ai_editorial.ingest.timeout_seconds', 20))
-            ->get($feedUrl);
+        $items = collect();
 
-        if (! $response->successful()) {
-            return collect();
+        foreach ($feedUrls as $feedUrl) {
+            $response = $this->http
+                ->timeout((int) config('ai_editorial.ingest.timeout_seconds', 20))
+                ->get($feedUrl);
+
+            if (! $response->successful()) {
+                continue;
+            }
+
+            $items = $items->concat($this->parseXmlFeed((string) $response->body(), $source, $limit));
+
+            if ($items->count() >= $limit) {
+                break;
+            }
         }
 
-        return $this->parseXmlFeed((string) $response->body(), $source, $limit);
+        return $items
+            ->filter()
+            ->unique('source_url')
+            ->take($limit)
+            ->values();
     }
 
     protected function parseXmlFeed(string $xml, object $source, int $limit): Collection

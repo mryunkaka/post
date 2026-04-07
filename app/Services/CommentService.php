@@ -63,6 +63,11 @@ class CommentService
         return $this->setStatus($comment, 'spam');
     }
 
+    public function delete(Comment $comment): void
+    {
+        $comment->delete();
+    }
+
     public function commentsEnabled(): bool
     {
         return filter_var($this->settingService->get('feature_comment_enabled', false), FILTER_VALIDATE_BOOL);

@@ -16,10 +16,11 @@ class NewsIngestionService
      */
     public function ingest(?string $sourceCode = null, ?int $limit = null): array
     {
-        $remaining = max(1, $limit ?? (int) config('ai_editorial.ingest.default_limit', 10));
+        $remaining = max(1, $limit ?? (int) config('ai_editorial.ingest.default_limit', 30));
         $sources = $sourceCode === null
             ? $this->sourceRegistry->active()
             : $this->sourceRegistry->active()->where('code', $sourceCode)->values();
+        $perSourceLimit = max(1, (int) ceil($remaining / max(1, $sources->count())));
 
         $summary = [
             'sources' => $sources->count(),
@@ -34,7 +35,7 @@ class NewsIngestionService
                 break;
             }
 
-            $items = $this->fetcher->fetch($source, $remaining);
+            $items = $this->fetcher->fetch($source, min($remaining, $perSourceLimit));
             $summary['fetched'] += $items->count();
 
             foreach ($items as $item) {
