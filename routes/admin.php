@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin,editor,wartawan'])
@@ -34,5 +35,6 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
         Route::middleware('role:admin')->group(function (): void {
             Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
             Route::patch('settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::resource('users', UserController::class)->except('show');
         });
     });
