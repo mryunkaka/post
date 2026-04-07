@@ -9,7 +9,7 @@
   - `APP_NAME="TodakSiring"`
   - `APP_BRAND_NAME="TodakSiring"`
 - Current repository state at document revision:
-  - Workspace sudah menjadi aplikasi Laravel 13 baseline
+- Workspace sudah menjadi aplikasi Laravel 13 baseline
   - Composer dependency utama sudah terpasang
   - Frontend baseline sudah terpasang dengan Vite, Tailwind CSS v4, Alpine.js, dan editor admin Quill
   - Database migration inti proyek sudah diimplementasikan
@@ -24,6 +24,7 @@
 - Backup strategy dasar dan dokumentasi recovery sudah diimplementasikan
 - Mail system asynchronous dasar sudah diimplementasikan
 - Guest comment policy dan moderation flow dasar sudah diimplementasikan
+- Fondasi source registry dan news candidate pipeline AI editorial sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-08`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -269,6 +270,13 @@ Urutan pipeline wajib:
 7. `self-validation`
 8. `human review`
 9. `publish manual`
+
+Fondasi implementasi minimum:
+
+- `config/ai_editorial.php` untuk registry provider, model, limit, dan whitelist sumber
+- `news_candidates` table untuk menampung hasil ingestion sebelum menjadi draft artikel
+- `SourceRegistryService` untuk membaca dan memfilter sumber aktif
+- `NewsCandidateService` untuk menyimpan atau memperbarui kandidat berita dari pipeline ingestion
 
 Aturan operasional:
 

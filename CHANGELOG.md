@@ -23,6 +23,13 @@
   - `CategoryProvisionService` dapat mencari kategori existing atau membuat kategori baru secara terkontrol
   - AI diarahkan memakai service internal backend, bukan email/password admin untuk login ke panel
   - test unit ditambahkan untuk memastikan resolve existing category dan create category baru berjalan aman
+- Menambahkan fondasi AI newsroom tahap ingestion:
+  - `config/ai_editorial.php` untuk provider `gemini-2.5-flash-lite`, limit harian, dan whitelist sumber Kalsel/Tanah Bumbu/Kotabaru
+  - tabel `news_candidates` untuk kandidat berita hasil pipeline sebelum menjadi draft artikel
+  - `SourceRegistryService` untuk registry sumber aktif
+  - `NewsCandidateService` untuk upsert kandidat berita dari hasil ingestion
+  - unit test ditambahkan untuk registry sumber dan penyimpanan kandidat berita
+- Menyinkronkan [docs/MANUAL_DATABASE_SCHEMA.sql] agar shared hosting tanpa SSH dapat membuat tabel `news_candidates` via phpMyAdmin
 
 - Memperbarui blok `NEED VERIFICATION` di docs berdasarkan hasil verifikasi lokal: runtime PHP 8.4.11, `pdo_mysql`, `gd`, ketersediaan scheduler command, dan keputusan final editor admin memakai Quill
 - Mengalihkan konfigurasi PHPUnit dari `pdo_sqlite` ke MySQL `media_test` dan menstabilkan test rate limiting agar aman dijalankan berulang
