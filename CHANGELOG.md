@@ -2,6 +2,7 @@
 
 ## 2026-04-07
 
+- Memperbarui blok `NEED VERIFICATION` di docs berdasarkan hasil verifikasi lokal: runtime PHP 8.4.11, `pdo_mysql`, `gd`, ketersediaan scheduler command, dan keputusan final editor admin memakai Quill
 - Mengalihkan konfigurasi PHPUnit dari `pdo_sqlite` ke MySQL `media_test` dan menstabilkan test rate limiting agar aman dijalankan berulang
 - Menambahkan model, service, controller, request, route, dan view untuk guest comment policy serta moderation flow komentar
 - Menambahkan form komentar publik dengan honeypot, pending moderation, dan reply maksimal satu level

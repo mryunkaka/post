@@ -56,11 +56,11 @@
                 </div>
             @endif
 
-            <div class="article-content rounded-[2rem] border border-stone-200/80 bg-white p-8 shadow-[0_28px_90px_-54px_rgba(28,25,23,0.4)]">
+            <div class="article-content rounded-[2rem] border border-stone-200/80 bg-white p-8 shadow-[0_28px_90px_-54px_rgba(28,25,23,0.4)]" style="text-align: justify; text-justify: inter-word;">
                 {!! $article->content !!}
             </div>
 
-            <section x-data="{ replyTo: @js(null), replyAuthor: '' }" class="space-y-6 rounded-[2rem] border border-stone-200/80 bg-white p-8 shadow-[0_28px_90px_-54px_rgba(28,25,23,0.4)]">
+            <section x-data="{ replyTo: @js(null), replyAuthor: '' }" class="comment-shell space-y-6 rounded-[2rem] p-8 shadow-[0_28px_90px_-54px_rgba(28,25,23,0.28)]">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">Komentar</p>
@@ -78,11 +78,11 @@
                 @endif
 
                 @if ($commentsEnabled)
-                    <form method="POST" action="{{ route('comments.store', $article->slug) }}" class="space-y-5 rounded-[1.75rem] border border-stone-200 bg-stone-50/80 p-6">
+                    <form method="POST" action="{{ route('comments.store', $article->slug) }}" class="comment-form-panel space-y-5 rounded-[1.75rem] p-6 md:p-7">
                         @csrf
                         <input type="hidden" name="parent_id" :value="replyTo">
 
-                        <div x-show="replyTo" x-cloak class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        <div x-show="replyTo" x-cloak class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.28)]">
                             <div class="flex items-center justify-between gap-3">
                                 <p>Anda sedang membalas komentar dari <strong x-text="replyAuthor"></strong>.</p>
                                 <button type="button" class="font-semibold" @click="replyTo = null; replyAuthor = ''">
@@ -94,14 +94,14 @@
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label for="guest_name" class="text-sm font-semibold text-stone-800">Nama</label>
-                                <input id="guest_name" name="guest_name" type="text" value="{{ old('guest_name') }}" class="mt-2 w-full rounded-2xl border-stone-300 bg-white px-4 py-3 text-sm focus:border-amber-500 focus:ring-amber-500">
+                                <input id="guest_name" name="guest_name" type="text" value="{{ old('guest_name') }}" class="comment-input mt-2 w-full rounded-2xl px-4 py-3 text-sm">
                                 @error('guest_name')
                                     <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
                                 <label for="guest_email" class="text-sm font-semibold text-stone-800">Email</label>
-                                <input id="guest_email" name="guest_email" type="email" value="{{ old('guest_email') }}" class="mt-2 w-full rounded-2xl border-stone-300 bg-white px-4 py-3 text-sm focus:border-amber-500 focus:ring-amber-500">
+                                <input id="guest_email" name="guest_email" type="email" value="{{ old('guest_email') }}" class="comment-input mt-2 w-full rounded-2xl px-4 py-3 text-sm">
                                 @error('guest_email')
                                     <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
                                 @enderror
@@ -115,7 +115,7 @@
 
                         <div>
                             <label for="content" class="text-sm font-semibold text-stone-800">Komentar</label>
-                            <textarea id="content" name="content" rows="5" class="mt-2 w-full rounded-[1.5rem] border-stone-300 bg-white px-4 py-3 text-sm focus:border-amber-500 focus:ring-amber-500">{{ old('content') }}</textarea>
+                            <textarea id="content" name="content" rows="5" class="comment-textarea mt-2 w-full rounded-[1.5rem] px-4 py-3 text-sm leading-7">{{ old('content') }}</textarea>
                             @error('content')
                                 <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
                             @enderror
@@ -139,7 +139,7 @@
 
                 <div class="space-y-5">
                     @forelse ($approvedComments as $comment)
-                        <article class="rounded-[1.75rem] border border-stone-200 bg-stone-50/70 p-5">
+                        <article class="comment-card rounded-[1.75rem] p-5">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="font-semibold text-stone-900">{{ $comment->displayName() }}</p>
@@ -148,7 +148,7 @@
                                 @if ($commentsEnabled)
                                     <button
                                         type="button"
-                                        class="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:border-stone-900 hover:text-stone-900"
+                                        class="rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-[inset_0_0_0_1px_rgba(214,211,209,0.88)] transition hover:text-stone-900"
                                         @click="replyTo = {{ $comment->id }}; replyAuthor = @js($comment->displayName())"
                                     >
                                         Balas
@@ -158,9 +158,9 @@
                             <p class="mt-4 whitespace-pre-line text-sm leading-7 text-stone-700">{{ $comment->content }}</p>
 
                             @if ($comment->replies->isNotEmpty())
-                                <div class="mt-5 space-y-4 border-l border-stone-200 pl-5">
+                                <div class="comment-reply-stack mt-5 space-y-4">
                                     @foreach ($comment->replies as $reply)
-                                        <article class="rounded-[1.5rem] bg-white p-4">
+                                        <article class="comment-reply-card rounded-[1.5rem] p-4">
                                             <p class="font-semibold text-stone-900">{{ $reply->displayName() }}</p>
                                             <p class="mt-1 text-xs uppercase tracking-[0.2em] text-stone-500">{{ $reply->created_at?->format('d M Y H:i') }}</p>
                                             <p class="mt-3 whitespace-pre-line text-sm leading-7 text-stone-700">{{ $reply->content }}</p>

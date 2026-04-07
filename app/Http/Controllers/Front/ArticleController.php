@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Services\ArticleViewBufferService;
 use App\Services\CommentService;
 use App\Services\FrontCacheService;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 
 class ArticleController extends Controller
@@ -74,7 +75,48 @@ class ArticleController extends Controller
             'commentsEnabled' => $this->commentService->commentsEnabled(),
             'approvedComments' => $article->comments,
             'metaTitle' => $article->meta_title ?: $article->title,
-            'metaDescription' => $article->meta_description ?: $article->excerpt,
+            'metaDescription' => $this->buildShareDescription($article),
+            'metaImage' => $this->resolveShareImage($article),
+            'metaType' => 'article',
+            'metaUrl' => $article->publicUrl(),
         ]);
+    }
+
+    protected function buildShareDescription(Article $article): string
+    {
+        $description = $article->meta_description
+            ?: $article->excerpt
+            ?: Str::of(strip_tags($article->content))
+                ->squish()
+                ->limit(220, '...')
+                ->value();
+
+        if ($description === '') {
+            return 'Baca liputan terbaru dan sorotan penting redaksi '.$article->title.'.';
+        }
+
+        return Str::of($description)
+            ->trim()
+            ->when(
+                ! Str::contains($description, ['Baca selengkapnya', 'Selengkapnya']),
+                fn ($text) => $text->append(' Baca selengkapnya di ', config('app.brand_name', config('app.name')), '.')
+            )
+            ->limit(220, '...')
+            ->value();
+    }
+
+    protected function resolveShareImage(Article $article): ?string
+    {
+        $featuredImage = $article->featuredImageUrl();
+
+        if ($featuredImage !== null) {
+            return $featuredImage;
+        }
+
+        if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $article->content, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

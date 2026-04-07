@@ -4,9 +4,37 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="description" content="{{ $metaDescription ?: $siteDescription }}">
+        @php
+            $pageMetaTitle = $metaTitle ?? null;
+            $pageMetaDescription = $metaDescription ?? null;
+            $resolvedMetaTitle = $pageMetaTitle ? $pageMetaTitle.' | '.$siteName : $siteName;
+            $resolvedMetaDescription = $pageMetaDescription ?: $siteDescription;
+            $resolvedMetaUrl = $metaUrl ?? url()->current();
+            $resolvedMetaType = $metaType ?? 'website';
+            $resolvedMetaImage = $metaImage ?? null;
+        @endphp
+        <meta name="description" content="{{ $resolvedMetaDescription }}">
+        <link rel="canonical" href="{{ $resolvedMetaUrl }}">
 
-        <title>{{ $metaTitle ? $metaTitle.' | '.$siteName : $siteName }}</title>
+        <meta property="og:site_name" content="{{ $siteName }}">
+        <meta property="og:type" content="{{ $resolvedMetaType }}">
+        <meta property="og:title" content="{{ $resolvedMetaTitle }}">
+        <meta property="og:description" content="{{ $resolvedMetaDescription }}">
+        <meta property="og:url" content="{{ $resolvedMetaUrl }}">
+
+        @if ($resolvedMetaImage)
+            <meta property="og:image" content="{{ $resolvedMetaImage }}">
+            <meta property="og:image:alt" content="{{ $pageMetaTitle ?: $siteName }}">
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:image" content="{{ $resolvedMetaImage }}">
+        @else
+            <meta name="twitter:card" content="summary">
+        @endif
+
+        <meta name="twitter:title" content="{{ $resolvedMetaTitle }}">
+        <meta name="twitter:description" content="{{ $resolvedMetaDescription }}">
+
+        <title>{{ $resolvedMetaTitle }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800&display=swap" rel="stylesheet" />

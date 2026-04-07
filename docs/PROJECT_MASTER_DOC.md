@@ -1485,37 +1485,37 @@ Format wajib:
 - [ ] Verifikasi versi runtime hosting target untuk Laravel 13
   - Status: `NEED VERIFICATION`
   - File terkait: `N/A`
-  - Catatan: Pastikan shared hosting mendukung PHP 8.3 atau 8.4, MySQL memadai, dan cron/queue tersedia
+  - Catatan: Environment lokal sudah tervalidasi memakai PHP `8.4.11`, `pdo_mysql`, MySQL, dan Laravel `13.3.0`; shared hosting target tetap perlu dikonfirmasi apakah mendukung PHP 8.3/8.4 serta akses cron dan queue worker
 
 - [ ] Verifikasi dukungan Redis di environment produksi
   - Status: `NEED VERIFICATION`
   - File terkait: `config/cache.php`, `config/queue.php`
-  - Catatan: Jika tidak tersedia, siapkan fallback `file` dan `database`
+  - Catatan: Environment lokal saat ini tidak menampilkan ekstensi `redis`; fallback proyek sudah siap via cache limiter `file` dan queue/cache `database`, tetapi dukungan Redis produksi masih perlu konfirmasi provider
 
 - [ ] Verifikasi apakah AMP masih diperlukan untuk strategi distribusi target
   - Status: `NEED VERIFICATION`
   - File terkait: `routes`, `resources/views`
-  - Catatan: Tetap dipertahankan di docs, implementasi menunggu validasi bisnis
+  - Catatan: Tidak ada implementasi AMP aktif dan feature flag masih `off`; keputusan tetap menunggu validasi bisnis/distribusi trafik
 
 - [ ] Verifikasi pendekatan AI Laravel 13 yang paling sesuai untuk hosting target
   - Status: `NEED VERIFICATION`
   - File terkait: `app/Services/AI`
-  - Catatan: Pastikan fitur AI yang dipilih kompatibel dengan arsitektur proyek dan biaya operasional
+  - Catatan: Belum ada modul AI aktif; keputusan masih menunggu validasi provider, biaya operasional, dan batasan hosting target
 
 - [ ] Verifikasi mekanisme scheduler dan cron di hosting target
   - Status: `NEED VERIFICATION`
   - File terkait: `app/Console`, `routes/console.php`
-  - Catatan: Scheduler wajib tersedia untuk backup, scheduled publishing, dan flush views counter
+  - Catatan: Environment lokal memiliki `php`, command scheduler Laravel aktif, dan `schtasks.exe` tersedia di Windows; hosting target tetap harus dipastikan menyediakan cron terjadwal untuk `schedule:run`
 
 - [ ] Verifikasi dukungan GD atau Imagick di hosting target
   - Status: `NEED VERIFICATION`
   - File terkait: `app/Services/MediaService.php`
-  - Catatan: Resize image wajib membutuhkan library dan ekstensi PHP yang kompatibel
+  - Catatan: Environment lokal memuat ekstensi `gd` dan tidak menampilkan `imagick`; `MediaService` saat ini kompatibel dengan stack lokal, tetapi hosting target tetap harus dipastikan memiliki GD atau driver image setara yang kompatibel
 
-- [ ] Verifikasi pemilihan rich text editor final untuk admin
-  - Status: `NEED VERIFICATION`
-  - File terkait: `resources/views/admin`, `resources/js`
-  - Catatan: Fase awal direkomendasikan memakai Trix atau editor ringan setara
+- [x] Verifikasi pemilihan rich text editor final untuk admin
+  - Status: `DONE`
+  - File terkait: `resources/views/admin`, `resources/js/app.js`, `package.json`
+  - Catatan: Editor final baseline ditetapkan memakai `Quill` karena implementasi saat ini stabil, sudah terintegrasi dengan sanitasi HTML dan workflow admin, serta dependency `quill` sudah menjadi bagian stack frontend aktif
 
 ### 19.3 TODO
 
@@ -1620,7 +1620,7 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Menambahkan tampilan komentar approved di halaman artikel publik beserta form guest comment dan reply ke komentar root
 - Menambahkan aksi moderasi `approve`, `reject`, dan `spam` untuk editor/admin di panel admin
 - Menambahkan feature test komentar publik dan moderasi admin
-- Verifikasi feature test komentar penuh masih terhambat di environment ini karena driver `pdo_sqlite` belum tersedia untuk test database
+- Feature test komentar publik dan moderasi admin sudah tervalidasi pada environment MySQL `media_test`
 - Mengimplementasikan mail system asynchronous dasar proyek:
   - default mailer digeser ke failover `smtp -> log`
   - queue email memakai Laravel Queue dengan queue name `mail`
@@ -1635,7 +1635,7 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
   - publish atau scheduled publish mengirim email ke author aktif
   - scheduler publish due article juga mengirim email ke author aktif
 - Menambahkan unit test mail async tanpa dependensi database untuk memverifikasi mailable benar-benar di-queue
-- Verifikasi feature test workflow artikel masih terhambat di environment ini karena driver `pdo_sqlite` belum tersedia untuk test database
+- Feature test workflow artikel sudah tervalidasi pada environment MySQL `media_test`
 - Mengimplementasikan backup strategy dasar proyek:
   - command `backup:database` untuk dump MySQL harian
   - command `backup:media` untuk arsip zip media publik
@@ -1652,7 +1652,7 @@ Semua perubahan proyek wajib dicatat. Jika belum ada file changelog terpisah, ca
 - Menyetel `config/cache.php` agar rate limiter default memakai cache store `file` demi fallback shared hosting tanpa Redis
 - Menyesuaikan lockout login internal agar konsisten dengan batas docs
 - Menambahkan coverage test untuk login throttling serta limiter publik dan API
-- Verifikasi otomatis penuh masih terhambat di environment ini karena driver `pdo_sqlite` belum tersedia untuk test database
+- Verifikasi otomatis penuh kini berjalan pada MySQL `media_test` tanpa ketergantungan `pdo_sqlite`
 
 ### 2026-04-02
 
