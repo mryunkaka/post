@@ -1267,6 +1267,15 @@ Approval flow wajib jelas karena ini inti operasi redaksi.
 - Shared hosting yang tidak mendukung cron:
   - scheduled publishing tidak bisa digunakan
   - fitur ini harus didisable dari UI admin
+  - fallback baseline proyek ini: `public/artisan-runner.php` dengan `ARTISAN_WEB_TOKEN`
+  - command yang aman untuk AI newsroom:
+    - `news-ingest`
+    - `news-generate-drafts`
+    - `schedule-run`
+  - contoh:
+    - `/artisan-runner.php?token=TOKEN_RAHASIA&cmd=news-ingest&limit=10`
+    - `/artisan-runner.php?token=TOKEN_RAHASIA&cmd=news-generate-drafts&limit=10`
+    - `/artisan-runner.php?token=TOKEN_RAHASIA&cmd=schedule-run`
 - Scheduler juga dipakai untuk:
   - flush views counter
   - backup

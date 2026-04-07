@@ -10,6 +10,9 @@ declare(strict_types=1);
  *   /artisan-runner.php?token=YOUR_TOKEN&cmd=about
  *   /artisan-runner.php?token=YOUR_TOKEN&cmd=optimize-clear
  *   /artisan-runner.php?token=YOUR_TOKEN&cmd=migrate-force
+ *   /artisan-runner.php?token=YOUR_TOKEN&cmd=news-ingest&limit=10
+ *   /artisan-runner.php?token=YOUR_TOKEN&cmd=news-generate-drafts&limit=10
+ *   /artisan-runner.php?token=YOUR_TOKEN&cmd=schedule-run
  *
  * Required:
  *   Add ARTISAN_WEB_TOKEN=your-secret-token to the project .env file.
@@ -104,6 +107,9 @@ $allowedCommands = [
     'route-cache' => 'route:cache',
     'view-cache' => 'view:cache',
     'queue-restart' => 'queue:restart',
+    'schedule-run' => 'schedule:run',
+    'news-ingest' => 'news:ingest',
+    'news-generate-drafts' => 'news:generate-drafts',
 ];
 
 $cmdKey = (string) ($_GET['cmd'] ?? '');
@@ -121,6 +127,33 @@ if (!isset($allowedCommands[$cmdKey])) {
 }
 
 $artisanCommand = $allowedCommands[$cmdKey];
+
+if ($cmdKey === 'news-ingest' || $cmdKey === 'news-generate-drafts') {
+    $limit = $_GET['limit'] ?? null;
+
+    if ($limit !== null && $limit !== '') {
+        if (!ctype_digit((string) $limit) || (int) $limit < 1 || (int) $limit > 50) {
+            http_response_code(400);
+            exit("Invalid limit. Allowed range: 1-50.\n");
+        }
+
+        $artisanCommand .= ' --limit='.(int) $limit;
+    }
+}
+
+if ($cmdKey === 'news-ingest') {
+    $source = $_GET['source'] ?? null;
+
+    if ($source !== null && $source !== '') {
+        if (!preg_match('/^[a-z0-9_-]+$/i', (string) $source)) {
+            http_response_code(400);
+            exit("Invalid source.\n");
+        }
+
+        $artisanCommand .= ' --source='.escapeshellarg((string) $source);
+    }
+}
+
 $shellCommand = sprintf(
     'cd %s && %s artisan %s 2>&1',
     escapeshellarg($projectRoot),
