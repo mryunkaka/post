@@ -105,6 +105,13 @@
                     </div>
                 @endif
 
+                @if ($article->review_notes)
+                    <div class="mt-8 rounded-2xl bg-stone-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Catatan AI / Sumber Tambahan</p>
+                        <p class="mt-3 whitespace-pre-line text-sm leading-7 text-stone-700">{{ $article->review_notes }}</p>
+                    </div>
+                @endif
+
                 <div class="prose prose-stone mt-8 max-w-none text-sm leading-7">
                     {!! $article->content !!}
                 </div>

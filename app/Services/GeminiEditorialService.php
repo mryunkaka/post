@@ -82,6 +82,7 @@ TEXT;
             })
             ->implode("\n\n");
         $wordTarget = (int) config('ai_editorial.generation.min_word_target', 550);
+        $minSources = (int) config('ai_editorial.generation.min_sources_per_story', 3);
 
         return <<<PROMPT
 Anda adalah wartawan profesional untuk portal berita daerah Indonesia. Tugas Anda menulis draft berita yang faktual, enak dibaca, tidak halu, dan tetap mengakui sumber asli.
@@ -97,9 +98,13 @@ Aturan keras:
 - Jangan menyalin mentah isi sumber.
 - Jika ada beberapa sumber terkait, gabungkan fakta yang saling menguatkan menjadi satu narasi yang utuh.
 - Jika sumber membahas topik yang sama dengan sudut berbeda, rangkum menjadi satu artikel komprehensif.
+- Prioritaskan memakai minimal {$minSources} sumber unik bila tersedia di data input.
 - Panjang artikel minimal sekitar {$wordTarget} kata, ideal 7 sampai 10 paragraf isi utama.
 - Artikel harus memiliki pembuka kuat, konteks, rincian fakta, dampak/arti berita, dan penutup yang jelas.
 - Jangan membuat artikel pendek dangkal.
+- Jika berita mengandung angka, data statistik, nilai anggaran, jumlah korban, jumlah peserta, luas wilayah, atau klaim kuantitatif lain, hanya tulis bila memang ada di sumber dan sebutkan konteks sumbernya dengan akurat.
+- Jika ada perbedaan data antarsumber, pilih data yang paling resmi atau paling kuat, dan jangan mengarang kompromi angka.
+- Jangan menyebut ada verifikasi lapangan langsung kecuali hal itu tertulis jelas di sumber.
 
 Keluarkan JSON object saja tanpa markdown dengan field:
 title, excerpt, content_html, meta_title, meta_description, category_name, tags

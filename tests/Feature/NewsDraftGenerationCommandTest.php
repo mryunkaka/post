@@ -16,7 +16,9 @@ class NewsDraftGenerationCommandTest extends TestCase
     public function test_news_generate_drafts_command_creates_article_from_validated_candidate(): void
     {
         Config::set('ai_editorial.api_key', 'test-key');
+        Config::set('ai_editorial.generation.min_sources_per_story', 3);
         Config::set('ai_editorial.generation.max_sources_per_story', 4);
+        Config::set('ai_editorial.generation.max_images_per_story', 4);
         User::factory()->create([
             'role' => 'admin',
             'email' => 'admin@example.com',
@@ -34,8 +36,18 @@ class NewsDraftGenerationCommandTest extends TestCase
             'status' => 'validated',
             'source_name' => 'Media Center Kotabaru',
             'source_url' => 'https://example.test/berita/ekonomi-kotabaru-2',
+            'image_url' => 'https://example.test/media/ekonomi-kotabaru-2.jpg',
             'title' => 'Aktivitas Pelabuhan Kotabaru Meningkat, Distribusi Barang Ikut Ramai',
             'excerpt' => 'Peningkatan distribusi barang disebut menghidupkan ekonomi pesisir dan pasar lokal.',
+        ]);
+        $thirdCandidate = NewsCandidate::factory()->create([
+            'status' => 'validated',
+            'source_name' => 'BPS Kalimantan Selatan',
+            'source_url' => 'https://example.test/berita/ekonomi-kotabaru-3',
+            'image_url' => 'https://example.test/media/ekonomi-kotabaru-3.jpg',
+            'title' => 'Data Distribusi dan Aktivitas Ekonomi Kotabaru Menguat pada Triwulan Awal',
+            'excerpt' => 'Data terbaru menunjukkan pergerakan distribusi dan aktivitas ekonomi pesisir Kotabaru ikut meningkat.',
+            'facts_summary' => 'Data distribusi, logistik, dan ekonomi Kotabaru pada triwulan awal menunjukkan penguatan aktivitas.',
         ]);
 
         Http::fake([
@@ -70,9 +82,19 @@ class NewsDraftGenerationCommandTest extends TestCase
             'featured_image' => 'https://example.test/media/ekonomi-kotabaru.jpg',
         ]);
 
+        $article = \App\Models\Article::query()->where('title', 'Ekonomi Kotabaru Bergerak, Aktivitas Pelabuhan Ikut Menguat')->firstOrFail();
+
+        $this->assertStringContainsString('Media Center Kotabaru - Aktivitas Pelabuhan Kotabaru Meningkat, Distribusi Barang Ikut Ramai', $article->content);
+        $this->assertStringContainsString('BPS Kalimantan Selatan - Data Distribusi dan Aktivitas Ekonomi Kotabaru Menguat pada Triwulan Awal', $article->content);
+        $this->assertStringContainsString('https://example.test/media/ekonomi-kotabaru-2.jpg', $article->content);
+        $this->assertStringContainsString('https://example.test/media/ekonomi-kotabaru-3.jpg', $article->content);
+        $this->assertStringContainsString('Jumlah sumber terpakai: 3', $article->review_notes ?? '');
+
         $this->assertSame('drafted', $candidate->fresh()->status);
         $this->assertSame('drafted', $relatedCandidate->fresh()->status);
+        $this->assertSame('drafted', $thirdCandidate->fresh()->status);
         $this->assertNotNull($candidate->fresh()->article_id);
         $this->assertSame($candidate->fresh()->article_id, $relatedCandidate->fresh()->article_id);
+        $this->assertSame($candidate->fresh()->article_id, $thirdCandidate->fresh()->article_id);
     }
 }

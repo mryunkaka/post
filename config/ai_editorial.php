@@ -30,7 +30,9 @@ return [
         'default_limit' => (int) env('AI_EDITORIAL_GENERATION_LIMIT', 10),
         'endpoint' => env('AI_EDITORIAL_GENERATION_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models'),
         'pool_multiplier' => (int) env('AI_EDITORIAL_GENERATION_POOL_MULTIPLIER', 3),
+        'min_sources_per_story' => (int) env('AI_EDITORIAL_MIN_SOURCES_PER_STORY', 3),
         'max_sources_per_story' => (int) env('AI_EDITORIAL_MAX_SOURCES_PER_STORY', 4),
+        'max_images_per_story' => (int) env('AI_EDITORIAL_MAX_IMAGES_PER_STORY', 4),
         'min_word_target' => (int) env('AI_EDITORIAL_MIN_WORD_TARGET', 550),
     ],
 

@@ -158,30 +158,64 @@ class NewsDraftGenerationService
     {
         $primaryKeywords = $this->storyKeywords($candidate);
         $primarySignature = $this->storySignature($candidate);
+        $minSources = max(1, (int) config('ai_editorial.generation.min_sources_per_story', 3));
         $maxSources = max(1, (int) config('ai_editorial.generation.max_sources_per_story', 4));
-
-        $related = $candidatePool
-            ->filter(function (NewsCandidate $item) use ($candidate, $primaryKeywords, $primarySignature): bool {
-                if ($item->getKey() === $candidate->getKey()) {
-                    return false;
-                }
-
-                if ($item->article_id !== null || $item->status !== 'validated') {
-                    return false;
-                }
-
-                if ($this->storySignature($item) === $primarySignature) {
-                    return true;
-                }
-
-                return $this->keywordOverlap($primaryKeywords, $this->storyKeywords($item)) >= 2;
+        $ranked = $candidatePool
+            ->filter(function (NewsCandidate $item) use ($candidate): bool {
+                return $item->getKey() !== $candidate->getKey()
+                    && $item->article_id === null
+                    && $item->status === 'validated'
+                    && $item->source_url !== $candidate->source_url;
             })
-            ->sortByDesc('source_published_at')
-            ->unique('source_url')
-            ->take($maxSources - 1);
+            ->map(function (NewsCandidate $item) use ($candidate, $primaryKeywords, $primarySignature): array {
+                return [
+                    'candidate' => $item,
+                    'score' => $this->relatednessScore($candidate, $item, $primaryKeywords, $primarySignature),
+                ];
+            })
+            ->filter(fn (array $entry): bool => $entry['score'] > 0)
+            ->sortByDesc('score')
+            ->values();
 
-        return collect([$candidate])
-            ->concat($related)
+        $bundle = collect([$candidate]);
+        $usedSources = [$candidate->source_name];
+
+        foreach ($ranked as $entry) {
+            /** @var NewsCandidate $relatedCandidate */
+            $relatedCandidate = $entry['candidate'];
+
+            if ($bundle->count() >= $maxSources) {
+                break;
+            }
+
+            if ($bundle->count() < $minSources && ! in_array($relatedCandidate->source_name, $usedSources, true)) {
+                $bundle->push($relatedCandidate);
+                $usedSources[] = $relatedCandidate->source_name;
+
+                continue;
+            }
+
+            if (! $bundle->contains(fn (NewsCandidate $item) => $item->source_url === $relatedCandidate->source_url)) {
+                $bundle->push($relatedCandidate);
+            }
+        }
+
+        if ($bundle->count() < $minSources) {
+            foreach ($ranked as $entry) {
+                /** @var NewsCandidate $relatedCandidate */
+                $relatedCandidate = $entry['candidate'];
+
+                if ($bundle->count() >= $minSources || $bundle->count() >= $maxSources) {
+                    break;
+                }
+
+                if (! $bundle->contains(fn (NewsCandidate $item) => $item->source_url === $relatedCandidate->source_url)) {
+                    $bundle->push($relatedCandidate);
+                }
+            }
+        }
+
+        return $bundle
             ->unique('source_url')
             ->values();
     }
@@ -209,6 +243,7 @@ class NewsDraftGenerationService
     protected function appendSourceAttribution(string $content, Collection $sources): string
     {
         $content = trim($content);
+        $gallery = $this->appendImageGallery($sources);
         $items = $sources
             ->unique('source_url')
             ->map(fn (NewsCandidate $source): string => sprintf(
@@ -218,13 +253,17 @@ class NewsDraftGenerationService
             ))
             ->implode('');
         $attribution = '<div><p><strong>Sumber rujukan:</strong></p><ul>'.$items.'</ul></div>';
+        $parts = array_filter([$content, $gallery, $attribution]);
 
-        return $content === '' ? $attribution : $content."\n\n".$attribution;
+        return implode("\n\n", $parts);
     }
 
     protected function reviewNotes(Collection $sources): string
     {
-        $lines = ['Draft dibuat otomatis oleh AI editorial dan wajib direview editor sebelum publish.'];
+        $lines = [
+            'Draft dibuat otomatis oleh AI editorial dan wajib direview editor sebelum publish.',
+            'Jumlah sumber terpakai: '.$sources->unique('source_url')->count(),
+        ];
 
         foreach ($sources->unique('source_url') as $source) {
             $lines[] = 'Sumber: '.$source->source_name;
@@ -236,6 +275,41 @@ class NewsDraftGenerationService
         }
 
         return trim(implode("\n", $lines));
+    }
+
+    protected function appendImageGallery(Collection $sources): ?string
+    {
+        $maxImages = max(1, (int) config('ai_editorial.generation.max_images_per_story', 4));
+        $images = $sources
+            ->map(function (NewsCandidate $source): ?array {
+                $url = trim((string) ($source->image_url ?? ''));
+
+                if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+                    return null;
+                }
+
+                return [
+                    'url' => $url,
+                    'caption' => $source->source_name.' - '.$source->title,
+                ];
+            })
+            ->filter()
+            ->unique('url')
+            ->take($maxImages)
+            ->values();
+
+        if ($images->isEmpty()) {
+            return null;
+        }
+
+        $figures = $images->map(fn (array $image): string => sprintf(
+            '<figure><img src="%s" alt="%s" loading="lazy" referrerpolicy="no-referrer" /><figcaption>%s</figcaption></figure>',
+            e($image['url']),
+            e($image['caption']),
+            e($image['caption'])
+        ))->implode('');
+
+        return '<div class="ai-source-gallery">'.$figures.'</div>';
     }
 
     protected function resolveFeaturedImageUrl(Collection $sources): ?string
@@ -285,6 +359,36 @@ class NewsDraftGenerationService
     protected function keywordOverlap(array $left, array $right): int
     {
         return count(array_intersect($left, $right));
+    }
+
+    /**
+     * @param  list<string>  $primaryKeywords
+     */
+    protected function relatednessScore(NewsCandidate $primary, NewsCandidate $candidate, array $primaryKeywords, string $primarySignature): int
+    {
+        $score = 0;
+
+        if ($this->storySignature($candidate) === $primarySignature && $primarySignature !== '') {
+            $score += 8;
+        }
+
+        $score += $this->keywordOverlap($primaryKeywords, $this->storyKeywords($candidate)) * 3;
+
+        if ($candidate->region !== null && $candidate->region === $primary->region) {
+            $score += 3;
+        }
+
+        if ($candidate->source_name !== $primary->source_name) {
+            $score += 2;
+        }
+
+        $sourceName = Str::lower($candidate->source_name ?? '');
+
+        if (Str::contains($sourceName, ['antara', 'bmkg', 'bps', 'kementerian', 'pemprov', 'pemkab', 'media center'])) {
+            $score += 1;
+        }
+
+        return $score;
     }
 
     /**
