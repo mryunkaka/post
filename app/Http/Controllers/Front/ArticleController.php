@@ -123,12 +123,14 @@ class ArticleController extends Controller
      */
     protected function resolveShareImage(Article $article): array
     {
-        if ($article->featured_image !== null && $article->featured_image !== '') {
+        $featuredImage = $article->featuredImageUrl();
+
+        if ($featuredImage !== null) {
             return [
-                'url' => route('articles.social-image', $article),
-                'width' => 1200,
-                'height' => 630,
-                'type' => 'image/jpeg',
+                'url' => $featuredImage,
+                'width' => null,
+                'height' => null,
+                'type' => null,
             ];
         }
 
