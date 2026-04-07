@@ -10,6 +10,13 @@ return [
         'calls_per_day' => (int) env('AI_EDITORIAL_MAX_CALLS_PER_DAY', 100),
     ],
 
+    'validation' => [
+        'min_title_length' => (int) env('AI_EDITORIAL_MIN_TITLE_LENGTH', 18),
+        'min_excerpt_length' => (int) env('AI_EDITORIAL_MIN_EXCERPT_LENGTH', 40),
+        'max_source_age_hours' => (int) env('AI_EDITORIAL_MAX_SOURCE_AGE_HOURS', 72),
+        'allowed_schemes' => ['http', 'https'],
+    ],
+
     'regions' => [
         'priority' => [
             'kotabaru',

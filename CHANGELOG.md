@@ -29,6 +29,10 @@
   - `SourceRegistryService` untuk registry sumber aktif
   - `NewsCandidateService` untuk upsert kandidat berita dari hasil ingestion
   - unit test ditambahkan untuk registry sumber dan penyimpanan kandidat berita
+- Menambahkan validasi kandidat berita AI dan halaman review admin:
+  - `NewsCandidateValidationService` menolak kandidat stale, minim data, link sumber tidak layak, atau duplikat dengan berita published
+  - editor/admin mendapat halaman `Kandidat AI` untuk filter status/wilayah, validate, reject, dan reset kandidat
+  - feature test dan unit test ditambahkan untuk alur review kandidat AI
 - Menyinkronkan [docs/MANUAL_DATABASE_SCHEMA.sql] agar shared hosting tanpa SSH dapat membuat tabel `news_candidates` via phpMyAdmin
 
 - Memperbarui blok `NEED VERIFICATION` di docs berdasarkan hasil verifikasi lokal: runtime PHP 8.4.11, `pdo_mysql`, `gd`, ketersediaan scheduler command, dan keputusan final editor admin memakai Quill

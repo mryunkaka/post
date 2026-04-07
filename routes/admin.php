@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController;
+use App\Http\Controllers\Admin\NewsCandidateController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,10 @@ Route::middleware(['auth', 'role:admin,editor,wartawan'])
             Route::patch('comments/{comment}/approve', [CommentController::class, 'approve'])->name('comments.approve');
             Route::patch('comments/{comment}/reject', [CommentController::class, 'reject'])->name('comments.reject');
             Route::patch('comments/{comment}/spam', [CommentController::class, 'spam'])->name('comments.spam');
+            Route::get('news-candidates', [NewsCandidateController::class, 'index'])->name('news-candidates.index');
+            Route::patch('news-candidates/{newsCandidate}/validate', [NewsCandidateController::class, 'validateCandidate'])->name('news-candidates.validate');
+            Route::patch('news-candidates/{newsCandidate}/reject', [NewsCandidateController::class, 'reject'])->name('news-candidates.reject');
+            Route::patch('news-candidates/{newsCandidate}/reset', [NewsCandidateController::class, 'reset'])->name('news-candidates.reset');
         });
 
         Route::middleware('role:admin')->group(function (): void {

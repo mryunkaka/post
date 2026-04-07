@@ -22,6 +22,9 @@
                         <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                             {{ __('Kategori') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.news-candidates.index')" :active="request()->routeIs('admin.news-candidates.*')">
+                            {{ __('Kandidat AI') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.comments.index')" :active="request()->routeIs('admin.comments.*')">
                             {{ __('Komentar') }}
                         </x-nav-link>
@@ -98,6 +101,9 @@
             @if (in_array(Auth::user()->role, ['admin', 'editor'], true))
                 <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     {{ __('Kategori') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.news-candidates.index')" :active="request()->routeIs('admin.news-candidates.*')">
+                    {{ __('Kandidat AI') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.comments.index')" :active="request()->routeIs('admin.comments.*')">
                     {{ __('Komentar') }}

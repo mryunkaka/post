@@ -24,7 +24,7 @@
 - Backup strategy dasar dan dokumentasi recovery sudah diimplementasikan
 - Mail system asynchronous dasar sudah diimplementasikan
 - Guest comment policy dan moderation flow dasar sudah diimplementasikan
-- Fondasi source registry dan news candidate pipeline AI editorial sudah diimplementasikan
+- Fondasi source registry, validasi kandidat, dan review panel `news_candidates` AI editorial sudah diimplementasikan
 - Document status: `ACTIVE`
 - Last updated: `2026-04-08`
 - Owner role: `Tech Lead / Senior Software Engineer / AI Executor`
@@ -277,6 +277,8 @@ Fondasi implementasi minimum:
 - `news_candidates` table untuk menampung hasil ingestion sebelum menjadi draft artikel
 - `SourceRegistryService` untuk membaca dan memfilter sumber aktif
 - `NewsCandidateService` untuk menyimpan atau memperbarui kandidat berita dari pipeline ingestion
+- `NewsCandidateValidationService` untuk menolak kandidat stale, duplikat, atau minim data sebelum drafting
+- Halaman admin `Kandidat AI` untuk editor/admin memvalidasi kandidat sebelum tahap generate draft
 
 Aturan operasional:
 
